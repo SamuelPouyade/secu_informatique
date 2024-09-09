@@ -51,16 +51,24 @@ def cesar_decipher(offset: numbers, text: string):
 
 
 if __name__ == "__main__":
-    OFFSET = 12
-    TEXT = "mec super cool!! 1111 <>?(*)^%$^%^#&*%^"
 
-    cypher_message = cesar_encryption(OFFSET, TEXT)
-    print('message chiffré: %s' % cypher_message)
+    choice = input('Souhaitez vous chiffrer ou dechiffrer un message ? (réponse possible : cypher et decipher) ')
 
-    decipher_message = cesar_decipher(OFFSET, cypher_message)
-    print('message déchiffré: %s' % decipher_message)
+    if choice == 'cypher':
+        TEXT = input('Entrez le message à chiffrer: ')
+        OFFSET = int(input('Saisissez la taille du décalage: '))
+        cypher_message = cesar_encryption(OFFSET, TEXT)
+        print('message chiffré: %s' % cypher_message)
+    elif choice == 'decipher':
+        second_choice = input('Connaissez-vous le décalage ? (o ou n) ')
+        if second_choice == 'o':
+            OFFSET = int(input('Saisissez la taille du décalage: '))
+            TEXT = input('Entrez le message à déchiffrer: ')
+            decipher_message = cesar_decipher(OFFSET, TEXT)
+            print('message déchiffré: %s' % decipher_message)
+        elif second_choice == 'n':
+            TEXT = input('Entrez le message à déchiffrer: ')
+            for i in range(25):
+                decipher_message = cesar_decipher(i + 1, TEXT)
+                print('message déchiffré: %s' % decipher_message)
 
-    print('Seconde partie: ')
-    for i in range(25):
-        decipher_message = cesar_decipher(i+1, cypher_message)
-        print('message déchiffré: %s' % decipher_message)
