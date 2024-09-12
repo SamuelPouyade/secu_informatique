@@ -1,22 +1,21 @@
-import numbers
-import string
-
-
-def cesar_encryption(offset: numbers, text: string):
+def cesar_encryption(offset: int, text: str):
+    """
+    Fonction permettant de chiffrer un message en utilisant le chiffrement de César
+    :param offset: valeur de décalage
+    :param text: le message à chiffrer
+    :return: le message chiffré
     """
 
-    :param offset: the number of shifts
-    :param text: the message to be encrypted
-    :return: the encrypted message
-    """
-
-    upper_text = text.upper()
     positions = []
     cypher_message = []
+
+    # Conversion du texte en majuscule pour uniformiser les codes ASCII
+    upper_text = text.upper()
 
     for char in upper_text:
         alphabet_position = ord(char) - ord('A')
         if ord(char) < ord('A') or ord(char) > ord('Z'):
+            # Le caractère n'est pas une lettre de l'alphabet
             positions.append(alphabet_position)
         else:
             positions.append((alphabet_position + offset) % 26)
@@ -27,7 +26,7 @@ def cesar_encryption(offset: numbers, text: string):
     return ''.join(cypher_message)
 
 
-def cesar_decipher(offset: numbers, text: string):
+def cesar_decipher(offset: int, text: str):
     """
         :param offset: the number of shifts
         :param text: the message to be deciphered
@@ -71,4 +70,3 @@ if __name__ == "__main__":
             for i in range(25):
                 decipher_message = cesar_decipher(i + 1, TEXT)
                 print('message déchiffré: %s' % decipher_message)
-
