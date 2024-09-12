@@ -1,52 +1,31 @@
-def cesar_encryption(offset: int, text: str):
+def cesar_cipher(offset: int, text: str, encrypt = True) -> str:
     """
     Fonction permettant de chiffrer un message en utilisant le chiffrement de César
     :param offset: valeur de décalage
     :param text: le message à chiffrer
+    :param encrypt: chiffrement (True par défaut) ou déchiffrement (False)
     :return: le message chiffré
     """
 
-    positions = []
-    cypher_message = []
-
     # Conversion du texte en majuscule pour uniformiser les codes ASCII
     upper_text = text.upper()
+
+    # Variable qui stock le message chiffré
+    processed_text = []
 
     for char in upper_text:
         alphabet_position = ord(char) - ord('A')
         if ord(char) < ord('A') or ord(char) > ord('Z'):
             # Le caractère n'est pas une lettre de l'alphabet
-            positions.append(alphabet_position)
+            processed_text.append(alphabet_position)
         else:
-            positions.append((alphabet_position + offset) % 26)
+            if encrypt:
+                position = (alphabet_position + offset) % 26
+            else:
+                position = (alphabet_position - offset) % 26
+            processed_text.append(chr(ord('A') + position))
 
-    for position in positions:
-        cypher_message.append(chr(ord('A') + position))
-
-    return ''.join(cypher_message)
-
-
-def cesar_decipher(offset: int, text: str):
-    """
-        :param offset: the number of shifts
-        :param text: the message to be deciphered
-        :return: the deciphered message
-    """
-    upper_text = text.upper()
-    positions = []
-    decipher_message = []
-
-    for char in upper_text:
-        alphabet_position = ord(char) - ord('A')
-        if ord(char) < ord('A') or ord(char) > ord('Z'):
-            positions.append(alphabet_position)
-        else:
-            positions.append((alphabet_position - offset) % 26)
-
-    for position in positions:
-        decipher_message.append(chr(ord('A') + position))
-
-    return ''.join(decipher_message)
+    return "".join(processed_text)
 
 
 if __name__ == "__main__":
@@ -56,17 +35,17 @@ if __name__ == "__main__":
     if choice == 'cypher':
         TEXT = input('Entrez le message à chiffrer: ')
         OFFSET = int(input('Saisissez la taille du décalage: '))
-        cypher_message = cesar_encryption(OFFSET, TEXT)
+        cypher_message = cesar_cipher(OFFSET, TEXT)
         print('message chiffré: %s' % cypher_message)
     elif choice == 'decipher':
         second_choice = input('Connaissez-vous le décalage ? (o ou n) ')
         if second_choice == 'o':
             OFFSET = int(input('Saisissez la taille du décalage: '))
             TEXT = input('Entrez le message à déchiffrer: ')
-            decipher_message = cesar_decipher(OFFSET, TEXT)
+            decipher_message = cesar_cipher(OFFSET, TEXT, False)
             print('message déchiffré: %s' % decipher_message)
         elif second_choice == 'n':
             TEXT = input('Entrez le message à déchiffrer: ')
             for i in range(25):
-                decipher_message = cesar_decipher(i + 1, TEXT)
+                decipher_message = cesar_cipher(i + 1, TEXT, False)
                 print('message déchiffré: %s' % decipher_message)
