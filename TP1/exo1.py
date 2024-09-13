@@ -1,6 +1,7 @@
 from simple_term_menu import TerminalMenu
 
-def cesar_cipher(text: str, offset: int, encrypt = True) -> str:
+
+def cesar_cipher(text: str, offset: int, encrypt=True) -> str:
     """
     Fonction permettant de chiffrer ou de déchiffrer un message en utilisant le chiffrement de César
     :param text: le message à traiter
@@ -37,8 +38,9 @@ if __name__ == "__main__":
     main_menu = TerminalMenu(main_options, title=main_title, cycle_cursor=True, clear_screen=True)
 
     decryption_title = "Déchiffrement\nAppuyez sur les flèches pour naviguer et sur Entrée pour sélectionner"
-    decryption_options = ["Déchiffrer", "⚠ Attaque \"Brute force\" ⚠", None, "Retour"]
+    decryption_options = ["Déchiffrer", "Attaque \"Brute force\"", None, "Retour"]
     decryption_menu = TerminalMenu(decryption_options, title=decryption_title, cycle_cursor=True, clear_screen=True)
+    decryption_menu_back = False
 
     while True:
         main_entry_index = main_menu.show()
@@ -56,7 +58,7 @@ if __name__ == "__main__":
             input('Appuyez sur Entrée pour continuer...')
         # Déchiffrement
         elif main_entry_index == 1:
-            while True:
+            while not decryption_menu_back:
                 decryption_entry_index = decryption_menu.show()
                 # Déchiffrer
                 if decryption_entry_index == 0:
@@ -68,9 +70,9 @@ if __name__ == "__main__":
                         except ValueError:
                             print("Veuillez saisir un nombre entier")
                     decipher_message = cesar_cipher(input_text, input_offset, False)
-                    print('message déchiffré: %s' % decipher_message)
+                    print('Message déchiffré: %s' % decipher_message)
                     input('Appuyez sur Entrée pour continuer...')
-                    break
+                    decryption_menu_back = True
                 # Attaque "Brute force"
                 elif decryption_entry_index == 1:
                     input_text = input('Entrez le message à déchiffrer: ')
@@ -79,10 +81,11 @@ if __name__ == "__main__":
                         decipher_message = cesar_cipher(input_text, i + 1, False)
                         print(decipher_message)
                     input('Appuyez sur Entrée pour continuer...')
-                    break
+                    decryption_menu_back = True
                 # Retour
                 if decryption_entry_index == len(decryption_options) - 1:
-                    break
+                    decryption_menu_back = True
+            decryption_menu_back = False
         # Quitter
         elif main_entry_index == len(main_options) - 1:
             print("Au revoir !")
