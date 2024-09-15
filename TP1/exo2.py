@@ -1,9 +1,7 @@
-## Convertir le message en chiffre, le mettre entre 0 et 25
-## Convertir la clé de chiffrement en chiffre et la mettre entre 0 et 25
-## Additionner les deux chiffres et faire en sortes qu'ils soient compris entre 0 et 25
 
 import numbers
 import string
+import numpy as np
 
 
 def convert_letter_to_number(text: string):
@@ -113,6 +111,9 @@ def findAllRepetitions (text: string, nombre_depart_actuel: int, nombre_depart_p
 
     suite = text[nombre_depart_actuel:nombre_arrive]
 
+    if nombre_arrive > length // 2:
+        return taille_possible
+
     if suite == mot_precedent:
         return taille_possible
 
@@ -140,7 +141,34 @@ def findAllRepetitions (text: string, nombre_depart_actuel: int, nombre_depart_p
 
         all_multiples = get_all_multiple(all_difference[0])
         taille_possible[suite] = all_multiples
+        dataToDelete = []
+
+        for property in taille_possible:
+            if property != suite:
+                if suite > property:
+                    if suite.startswith(property):
+                        dataToDelete.append(property)
+                elif property > suite:
+                    if property.startswith(suite):
+                        dataToDelete.append(suite)
+
+        for property in dataToDelete:
+            del taille_possible[property]
+
         return findAllRepetitions(text, nombre_depart_actuel, nombre_depart_precedent + 1, nombre_arrive + 1, taille_possible, suite)
+
+def refineMultiple (object) :
+    all_posibilities = []
+    for property in object:
+        for property2 in object:
+            if property != property2:
+                if set(object[property]) & set(object[property2]):
+                    if object[property] not in all_posibilities:
+                        all_posibilities.append(object[property])
+
+    tableau_applati = np.array(all_posibilities).flatten().tolist()
+
+    print('La clé peut être égale à une taille de ces numéros suivant : ', set(tableau_applati))
 
 if __name__ == "__main__":
     choice = input('Souhaitez vous chiffrer ou dechiffrer un message ? (réponse possible : cypher et decipher) ')
@@ -153,7 +181,7 @@ if __name__ == "__main__":
         print('Message déchiffré: ', decipher_message)
     elif choice == 'findAllRepetitions':
         taille_possible = {}
-        all_position = findAllRepetitions('MFUVAHGUTSGVMFUTUJPPETQSOUCPIFP', 0, 0, 2,  taille_possible, '')
-        print(all_position)
+        all_position = findAllRepetitions('MFUVAIHGUOTVAIMFUTUJPIIPETQSOUCPIFP', 0, 0, 2,  taille_possible, '')
+        refineMultiple(all_position)
     else:
         print()
