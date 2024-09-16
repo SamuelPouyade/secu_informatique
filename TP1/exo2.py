@@ -86,6 +86,11 @@ def vigenere_decipher():
     return ''.join(decipher_message)
 
 def get_all_multiple (number: int):
+    '''
+    Fonction permettant d'avoir tout les multiples d'un nombre
+    :param number: Le nombre à analyser
+    :return: L'ensemble des multiples et le nombre analysé
+    '''
     half_number = number // 2
     all_multiple = []
     all_multiple.append(number)
@@ -98,77 +103,133 @@ def get_all_multiple (number: int):
     return all_multiple
 
 
-def findAllRepetitions (text: string, nombre_depart_actuel: int, nombre_depart_precedent: int, nombre_arrive: int, taille_possible, mot_precedent: string) :
+def findAllRepetitions (text: string, possible_length) :
+    '''
+    Fonction permettant de trouver toutes les répétitions possibles sans effectuer de tri
+    :param text: Le texte à analyser
+    :param possible_length: Objet stockant toutes les tailles possibles
+    :return: Un objet contenant toutes les tailles possibles associés aux mots répétés
+    '''
     length = len(text)
+    print((length // 2))
+    start_number = 0
+    last_start_number = 0
+    end_number = 2
+    last_word = ''
 
-    if nombre_depart_actuel >= length or nombre_arrive > length:
-        return taille_possible
+    while start_number < (length // 2) :
+        if end_number < length // 2:
+            end_number += 1
 
-    if nombre_arrive == length // 2 :
-        if nombre_depart_actuel < length // 2:
-            nombre_depart_actuel += nombre_depart_precedent + 1
-            nombre_arrive = nombre_depart_actuel + 2
+        if end_number > length // 2:
+            break
 
-    suite = text[nombre_depart_actuel:nombre_arrive]
+        elif end_number == length // 2 :
+            if start_number < length // 2:
+                last_start_number += 1
+                start_number = last_start_number + 1
+                end_number = start_number + 2
 
-    if nombre_arrive > length // 2:
-        return taille_possible
+        suite = text[start_number:end_number]
 
-    if suite == mot_precedent:
-        return taille_possible
+        if suite == last_word:
+            continue
 
-    nombre_rep = text.count(suite)
+        nombre_rep = text.count(suite)
 
-    if nombre_rep <= 1:
-        return findAllRepetitions(text, nombre_depart_actuel, nombre_depart_precedent, nombre_arrive+1, taille_possible, suite)
-    else:
-        all_occurence = []
-        all_difference = []
-        last_occurence = 0
+        if nombre_rep <= 1:
+            start_number += 1
+            continue
+        else:
+            all_occurence = []
+            all_difference = []
+            last_occurence = 0
 
-        for i in range(nombre_rep):
-            position = text.find(suite, last_occurence)
-            all_occurence.append(position)
-            # On augmente de 1 juste pour avoir un décalage et trouver la seconde position.
-            last_occurence = position + 1
+            # Permet d'obtenir toutes les positions à laquelle la suite de lettre est répétée
+            for i in range(nombre_rep):
+                position = text.find(suite, last_occurence)
+                all_occurence.append(position)
+                # On augmente de 1 juste pour avoir un décalage et trouver la seconde position.
+                last_occurence = position + 1
 
-        for i in range(len(all_occurence) - 1):
-            if all_occurence[i] == 0 :
-                all_difference.append(all_occurence[i + 1])
-            else:
-                all_difference.append(all_occurence[i+1] - all_occurence[i])
+            for i in range(len(all_occurence) - 1):
+                if all_occurence[i] == 0 :
+                    all_difference.append(all_occurence[i + 1])
+                else:
+                    all_difference.append(all_occurence[i+1] - all_occurence[i])
 
+            # Le décalage n'est pas identique partout, il ne faut pas pousser les valeurs.
+            if len(set(all_difference)) != 1:
+                start_number += 1
+                continue
 
-        all_multiples = get_all_multiple(all_difference[0])
-        taille_possible[suite] = all_multiples
-        dataToDelete = []
+            all_multiples = get_all_multiple(all_difference[0])
+            possible_length[suite] = all_multiples
 
-        for property in taille_possible:
-            if property != suite:
-                if suite > property:
-                    if suite.startswith(property):
-                        dataToDelete.append(property)
-                elif property > suite:
-                    if property.startswith(suite):
-                        dataToDelete.append(suite)
+            possible_length = delete_useless_data(suite, possible_length)
 
-        for property in dataToDelete:
-            del taille_possible[property]
+            start_number += 1
 
-        return findAllRepetitions(text, nombre_depart_actuel, nombre_depart_precedent + 1, nombre_arrive + 1, taille_possible, suite)
+    return possible_length
+
+def delete_useless_data(suite, possible_length):
+    '''
+    Fonction permettant de supprimer des valeurs inutiles
+    :param suite: La suite de caractères
+    :param possible_length: Le tableau contenant les différentes tailles possibles
+    :return: Retourne le tableau sans doublon
+    '''
+
+    data_to_delete = []
+    for property in possible_length:
+        if property != suite and len(property) != len(suite):
+            if property.startswith(suite) or suite.startswith(property) or suite.endswith(property) or property.endswith(suite):
+                if len(property) > len(suite):
+                    data_to_delete.append(suite)
+                else:
+                    data_to_delete.append(property)
+
+    for property in data_to_delete:
+        if property in possible_length:
+            del possible_length[property]
+
+    return possible_length
+
 
 def refineMultiple (object) :
+    '''
+    Fonction permettant d'affiner les choix selectionnables par l'utilisateur
+    :param object: L'objet contenant toutes les répétitions
+    :return: Retourne l'ensemble des tailles possibles
+    '''
     all_posibilities = []
-    for property in object:
-        for property2 in object:
-            if property != property2:
-                if set(object[property]) & set(object[property2]):
-                    if object[property] not in all_posibilities:
-                        all_posibilities.append(object[property])
+    print('Voici pour chaque suite les multiples pouvant définir la taille de la clé: ', object)
+    print('Un second traitement arrive pour afiner les résultats...')
 
-    tableau_applati = np.array(all_posibilities).flatten().tolist()
+    if len(object) == 0:
+        print('Aucune suite ne se répète, nous ne pouvons pas trouver la longueur de la clé')
+        return
+    elif len(object) == 1:
+        print(object)
+        first_key = list(object.keys())[0]
+        all_posibilities.append(object[first_key])
+    elif len(object) > 1:
+        for property in object:
+            for property2 in object:
+                if property != property2:
+                    common_properties = set(object[property]) & set(object[property2])
+                    if common_properties:
+                        all_posibilities.append(common_properties)
 
-    print('La clé peut être égale à une taille de ces numéros suivant : ', set(tableau_applati))
+    if len(all_posibilities) == 0:
+        print('Aucune cohérence entre les différentes tailles possibles')
+        return
+    else:
+        tableau_applati = [item for sublist in all_posibilities for item in sublist]
+
+        print('La clé peut être égale à une taille de ces numéros suivant : ', set(tableau_applati))
+        print('Cela peut laisser un nombre très important de possibilié en fonction de la taille du texte attention !')
+        return set(tableau_applati)
 
 if __name__ == "__main__":
     choice = input('Souhaitez vous chiffrer ou dechiffrer un message ? (réponse possible : cypher et decipher) ')
@@ -179,9 +240,9 @@ if __name__ == "__main__":
     elif choice == 'decipher':
         decipher_message = vigenere_decipher()
         print('Message déchiffré: ', decipher_message)
-    elif choice == 'findAllRepetitions':
-        taille_possible = {}
-        all_position = findAllRepetitions('MFUVAIHGUOTVAIMFUTUJPIIPETQSOUCPIFP', 0, 0, 2,  taille_possible, '')
+    elif choice == 'kasiski':
+        possible_length = {}
+        all_position = findAllRepetitions('KQOWEFVJPUJUUNUKGLMEKJINMWUXFQMKJBGWRLFNFGHUDWUUMBSVLPSNCMUEKQCTESWREEKOYSSIWCTUAXYOTAPXPLWPNTCGOJBGFQHTDWXIZAYGFFNSXCSEYNCTSSPNTUJNYTGGWZGRWUUNEJUUQEAPYMEKQHUIDUXFPGUYTSMTFFSHNUOCZGMRUWEYTRGKMEEDCTVRECFBDJQCUSWVBPNLGOYLSKMTEFVJJTWWMFMWPNMEMTMHRSPXFSSKFFSTNUOCZGMDOEOYEEKCPJRGPMURSKHFRSEIUEVGOYCWXIZAYGOSAANYDOEOYJLWUNHAMEBFELXYVLWNOJNSIOFRWUCCESWKVIDGMUCGOCRUWGNMAAFFVNSIUDEKQHCEUCPFCMPVSUDGAVEMNYMAMVLFMAOYFNTQCUAFVFJNXKLNEIWCWODCCULWRIFTWGMUSWOVMATNYBUHTCOCWFYTNMGYTQMKBBNLGFBTWOJFTWGNTEJKNEEDCLDHWTYYIDGMVRDGMPLSWGJLAGOEEKJOFEKUYTAANYTDWIYBNLNYNPWEBFNLFYNAJEBFR',  possible_length)
         refineMultiple(all_position)
     else:
         print()
