@@ -58,7 +58,7 @@ def cipher_input(encrypt=True) -> None:
 
     cypher_message = cesar_cipher(input_text, input_offset, encrypt)
 
-    print(f'Message {"chiffré" if encrypt else "déchiffré"} : {cypher_message}')
+    print(f"Message {"chiffré" if encrypt else "déchiffré"} : {cypher_message}")
 
 
 def cipher_brute_force_input() -> None:
