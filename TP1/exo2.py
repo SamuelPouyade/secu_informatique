@@ -2,6 +2,8 @@
 import numbers
 import string
 import numpy as np
+import re
+import collections
 
 
 def convert_letter_to_number(text: string):
@@ -111,7 +113,6 @@ def findAllRepetitions (text: string, possible_length) :
     :return: Un objet contenant toutes les tailles possibles associés aux mots répétés
     '''
     length = len(text)
-    print((length // 2))
     start_number = 0
     last_start_number = 0
     end_number = 2
@@ -202,34 +203,49 @@ def refineMultiple (object) :
     :param object: L'objet contenant toutes les répétitions
     :return: Retourne l'ensemble des tailles possibles
     '''
-    all_posibilities = []
     print('Voici pour chaque suite les multiples pouvant définir la taille de la clé: ', object)
     print('Un second traitement arrive pour afiner les résultats...')
 
     if len(object) == 0:
         print('Aucune suite ne se répète, nous ne pouvons pas trouver la longueur de la clé')
-        return
+        return []
     elif len(object) == 1:
-        print(object)
         first_key = list(object.keys())[0]
-        all_posibilities.append(object[first_key])
+        print('Les possibilités sont: ', object[first_key])
+        return object[first_key]
     elif len(object) > 1:
+        all_values = []
         for property in object:
-            for property2 in object:
-                if property != property2:
-                    common_properties = set(object[property]) & set(object[property2])
-                    if common_properties:
-                        all_posibilities.append(common_properties)
+            for value in object[property]:
+                all_values.append(value)
 
-    if len(all_posibilities) == 0:
-        print('Aucune cohérence entre les différentes tailles possibles')
-        return
-    else:
-        tableau_applati = [item for sublist in all_posibilities for item in sublist]
+        most_frequent_multiple = collections.Counter(all_values).most_common()[0][1]
+        if most_frequent_multiple != len(object):
+            print('Aucun multiple est présent pour chacunes des chaines se répétant')
+            most_frequent_multiple = collections.Counter(all_values).most_common(int(len(set(all_values)) * 0.10))
+            multiple_without_repetitions = []
+            for element in most_frequent_multiple:
+                multiple_without_repetitions.append(element[0])
+            print('Les multiples qui apparaissent 10% de fois plus que les autres sont : ', multiple_without_repetitions)
+            return multiple_without_repetitions
+        else:
+            most_frequent_multiple = collections.Counter(all_values).most_common()[0][0]
+            print('La clé est de la taille : ', most_frequent_multiple)
+            return most_frequent_multiple
 
-        print('La clé peut être égale à une taille de ces numéros suivant : ', set(tableau_applati))
-        print('Cela peut laisser un nombre très important de possibilié en fonction de la taille du texte attention !')
-        return set(tableau_applati)
+def divide_text (text):
+    possible_length = {}
+    all_position = findAllRepetitions(text, possible_length)
+    all_length = refineMultiple(all_position)
+    print(all_length)
+    if len(all_length) != 0:
+        for number in all_length:
+            print(number)
+            group = re.findall(f'.{{1,{number}}}', text)
+            for i, char in enumerate(text):
+                group[i % number] += char
+
+            print(group)
 
 if __name__ == "__main__":
     choice = input('Souhaitez vous chiffrer ou dechiffrer un message ? (réponse possible : cypher et decipher) ')
@@ -242,7 +258,9 @@ if __name__ == "__main__":
         print('Message déchiffré: ', decipher_message)
     elif choice == 'kasiski':
         possible_length = {}
-        all_position = findAllRepetitions('KQOWEFVJPUJUUNUKGLMEKJINMWUXFQMKJBGWRLFNFGHUDWUUMBSVLPSNCMUEKQCTESWREEKOYSSIWCTUAXYOTAPXPLWPNTCGOJBGFQHTDWXIZAYGFFNSXCSEYNCTSSPNTUJNYTGGWZGRWUUNEJUUQEAPYMEKQHUIDUXFPGUYTSMTFFSHNUOCZGMRUWEYTRGKMEEDCTVRECFBDJQCUSWVBPNLGOYLSKMTEFVJJTWWMFMWPNMEMTMHRSPXFSSKFFSTNUOCZGMDOEOYEEKCPJRGPMURSKHFRSEIUEVGOYCWXIZAYGOSAANYDOEOYJLWUNHAMEBFELXYVLWNOJNSIOFRWUCCESWKVIDGMUCGOCRUWGNMAAFFVNSIUDEKQHCEUCPFCMPVSUDGAVEMNYMAMVLFMAOYFNTQCUAFVFJNXKLNEIWCWODCCULWRIFTWGMUSWOVMATNYBUHTCOCWFYTNMGYTQMKBBNLGFBTWOJFTWGNTEJKNEEDCLDHWTYYIDGMVRDGMPLSWGJLAGOEEKJOFEKUYTAANYTDWIYBNLNYNPWEBFNLFYNAJEBFR',  possible_length)
+        all_position = findAllRepetitions('MFUVAHGUTSGVMFUGUJPPEQTQSOUCIFP',  possible_length)
         refineMultiple(all_position)
+    elif choice == 'cryptanalyse':
+        divide_text('MFUVAHGUTSGVMFUTUJPPEQTQSOUCIFP')
     else:
         print()
