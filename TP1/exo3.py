@@ -5,8 +5,10 @@ import time
 from simple_term_menu import TerminalMenu
 
 
-def list_hash(file="hashlist"):
-    return (hash_text.strip() for hash_text in open(file, "r", encoding="utf-8"))
+def list_hash(file="hashlist", encoding="utf-8"):
+    if not os.path.isfile(file):
+        open(file, "w+", encoding=encoding).close()
+    return (hash_text.strip() for hash_text in open(file, "r", encoding=encoding))
 
 
 def list_text_files(directory="."):
@@ -23,29 +25,29 @@ def text_to_md5(text: str) -> str:
     return hashlib.md5(text.encode()).hexdigest()
 
 
-def compare_hash_to_file(hash: str, file_name: str) -> str:
+def compare_md5_hash_to_file(hash_to_compare: str, file_name: str, encoding="latin-1") -> str:
     """
-    Compare un hash à une liste de mots de passe
-    :param hash: le hash à retrouver
+    Compare un hash MD5 à une liste de mots de passe
+    :param hash_to_compare: le hash à retrouver
     :param file_name: le fichier contenant les mots de passe
+    :param encoding: l'encodage du fichier
     :return: le mot de passe correspondant au hash
     """
-    for password in open(file_name, "r", encoding="latin-1"):
-        if hash == text_to_md5(password.strip()):
+    for password in open(file_name, "r", encoding=encoding):
+        if hash_to_compare == text_to_md5(password.strip()):
             return password.strip()
     return ""
 
 
 def find_hash_in_file(hash: str, file_name: str) -> None:
     """
-    Recherche un hash dans une liste de mots de passe
+    Recherche un hash dans une liste de mots de passe avec retours d'informations
     :param hash: le hash à retrouver
     :param file_name: le fichier contenant les mots de passe
-    :return: le mot de passe correspondant au hash
     """
-    print("Recherche du mot de passe...")
+    print(f"Recherche du mot de passe correspondant au hash \"{hash}\" dans le fichier \"{file_name}\"...")
     timer_start = time.time()
-    password = compare_hash_to_file(hash, file_name)
+    password = compare_md5_hash_to_file(hash, file_name)
     timer_end = time.time()
 
     if password != "":
@@ -53,6 +55,31 @@ def find_hash_in_file(hash: str, file_name: str) -> None:
         print(f"Temps d'exécution : {round(timer_end - timer_start, 2)} secondes")
     else:
         print("Le mot de passe n'a pas été trouvé...")
+
+
+def write_line_in_file(line: str, file_name="hashlist", encoding="utf-8") -> None:
+    """
+    Enregistre une ligne dans un fichier
+    :param line: la ligne à enregistrer
+    :param file_name: le fichier contenant les mots de passe
+    :param encoding: l'encodage du fichier
+    """
+    with open(file_name, "a", encoding=encoding) as file:
+        file.write(line + "\n")
+
+
+def register_hash() -> None:
+    """
+    Enregistre un hash dans un fichier
+    """
+    input_hash = ""
+
+    while input_hash == "":
+        input_hash = input("Entrez le Hash à enregistrer : ")
+
+    print("Enregistrement du hash...")
+    write_line_in_file(input_hash)
+    print("Le hash a bien été enregistré")
 
 
 if __name__ == "__main__":
@@ -82,14 +109,16 @@ if __name__ == "__main__":
             while not select_hash_back:
                 select_hash_entry_index = select_hash_menu.show()
                 # Retour
-                if select_hash_entry_index == len(select_hash_options) - 1 or select_hash_entry_index is None:
+                if select_hash_entry_index == len(select_hash_options) - 1 or select_hash_entry_index is None or \
+                        select_hash_options[select_hash_entry_index] is None:
                     select_hash_back = True
                 # Hash sélectionné
                 else:
                     while not select_file_back:
                         select_file_entry_index = select_file_menu.show()
                         # Retour
-                        if select_file_entry_index == len(select_file_options) - 1 or select_file_entry_index is None:
+                        if select_file_entry_index == len(select_file_options) - 1 or select_file_entry_index is None or \
+                                select_file_options[select_file_entry_index] is None:
                             select_file_back = True
                         # Fichier sélectionné
                         else:
@@ -102,9 +131,8 @@ if __name__ == "__main__":
             select_hash_back = False
         # Enregistrer un Hash
         if main_entry_index == 1:
-            input_hash = ""
-            while input_hash == "":
-                input_hash = input("Entrez le Hash à enregistrer : ")
+            register_hash()
+            input("Appuyez sur Entrée pour continuer...")
         # Quitter
         elif main_entry_index == len(main_options) - 1 or main_entry_index is None:
             print("Au revoir !")
