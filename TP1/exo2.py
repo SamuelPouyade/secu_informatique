@@ -1,9 +1,68 @@
-
-import numbers
 import string
-import numpy as np
 import re
 import collections
+from simple_term_menu import TerminalMenu
+
+def vigenere_cipher_input(encrypt=True) -> None:
+    """
+    Fonction permettant la saisie utilisateur d'un message dans le terminal et procède au chiffrement ou déchiffrement
+    du message à l'aide du chiffrement de Vigenère
+    :param encrypt: chiffrement (True par défaut) ou déchiffrement (False)
+    :return: Le message chiffré ou déchiffré dans le terminal
+    """
+
+    input_text = ""
+
+    # Le message ne doit pas être vide
+    while input_text == "":
+        input_text = input(f"Entrez le message à {"chiffrer" if encrypt else "déchiffrer"} : ")
+
+    # Le décalage doit être un nombre entier positif
+    while True:
+        try:
+            input_offset = (input("Saisissez la clé de chiffrement : "))
+            if len(input_offset) <= 0:
+                print("Veuillez saisir la clé de chiffrement")
+                continue
+            break
+        except ValueError:
+            print("Erreur lors de la saisie de la clé")
+
+    if encrypt:
+        message = vigenere_cipher(input_text, input_offset)
+        print('Le message chiffré est: ', message)
+    else:
+        message = vigenere_decipher(input_text, input_offset)
+        print('Le message déchiffré est: ', message)
+
+def kasiski_input():
+    """
+    Fonction permettant la saisie utilisateur d'un message dans le terminal et d'effectuer le test de Kasiski
+    :return: La liste des possibilité de longueur de clé
+    """
+
+    input_text = ""
+
+    # Le message ne doit pas être vide
+    while input_text == "":
+        input_text = input("Entrez le message à analyser : ")
+
+    all_position = findAllRepetitions(input_text)
+    refineMultiple(all_position)
+
+def cryptanalyse_input():
+    """
+    Fonction permettant la saisie utilisateur d'un message dans le terminal et d'effectuer une cryptanalyse
+    :return: La liste des possibilité de longueur de clé
+    """
+
+    input_text = ""
+
+    # Le message ne doit pas être vide
+    while input_text == "":
+        input_text = input("Entrez le message à cryptanalyser : ")
+
+    divide_text(input_text)
 
 
 def convert_letter_to_number(text: string):
@@ -17,19 +76,12 @@ def convert_letter_to_number(text: string):
 
     for char in upper_text:
         alphabet_position = ord(char) - ord('A')
-        if ord(char) < ord('A') or ord(char) > ord('Z'):
-            positions.append(alphabet_position)
-        else:
-            positions.append(alphabet_position)
+        positions.append(alphabet_position)
 
     return positions
 
 
-def vigenere_cypher():
-
-    message = input('Entrez le texte à chiffrer: ')
-    encryption_key = input('Entrez la clé à utiliser: ')
-
+def vigenere_cipher(message: string, encryption_key: string):
     message = convert_letter_to_number(message)
 
     position_of_letter_of_encryption_key = convert_letter_to_number(encryption_key)
@@ -46,7 +98,6 @@ def vigenere_cypher():
     for position in message:
         if position < 0 or position > 25:
             final_position.append(position)
-            counter += 1
         else:
             final_position.append((position + encryption_key[counter]) % 26)
             counter += 1
@@ -57,13 +108,8 @@ def vigenere_cypher():
     return ''.join(cypher_message)
 
 
-def vigenere_decipher():
-
-    message = input('Entrez le texte à déchiffrer: ')
-    decipher_key = input('Entrez la clé à utiliser: ')
-
+def vigenere_decipher(message: string, decipher_key: string):
     message = convert_letter_to_number(message)
-
     position_of_letter_of_encryption_key = convert_letter_to_number(decipher_key)
 
     if len(message) > len(position_of_letter_of_encryption_key):
@@ -77,7 +123,6 @@ def vigenere_decipher():
     for position in message:
         if position < 0 or position > 25:
             final_position.append(position)
-            counter += 1
         else:
             final_position.append((position - decipher_key[counter]) % 26)
             counter += 1
@@ -87,7 +132,7 @@ def vigenere_decipher():
 
     return ''.join(decipher_message)
 
-def get_all_multiple (number: int):
+def get_all_multiple (number: int) -> [int]:
     '''
     Fonction permettant d'avoir tout les multiples d'un nombre
     :param number: Le nombre à analyser
@@ -105,13 +150,14 @@ def get_all_multiple (number: int):
     return all_multiple
 
 
-def findAllRepetitions (text: string, possible_length) :
+def findAllRepetitions (text: string) :
     '''
     Fonction permettant de trouver toutes les répétitions possibles sans effectuer de tri
     :param text: Le texte à analyser
     :param possible_length: Objet stockant toutes les tailles possibles
     :return: Un objet contenant toutes les tailles possibles associés aux mots répétés
     '''
+    possible_length = {}
     length = len(text)
     start_number = 0
     last_start_number = 0
@@ -234,11 +280,10 @@ def refineMultiple (object) :
             return most_frequent_multiple
 
 def divide_text (text):
-    possible_length = {}
-    all_position = findAllRepetitions(text, possible_length)
+    all_position = findAllRepetitions(text)
     all_length = refineMultiple(all_position)
-    print(all_length)
-    if len(all_length) != 0:
+
+    if len(all_length) != 0 or all_length != 0:
         for number in all_length:
             print(number)
             group = re.findall(f'.{{1,{number}}}', text)
@@ -247,20 +292,39 @@ def divide_text (text):
 
             print(group)
 
-if __name__ == "__main__":
-    choice = input('Souhaitez vous chiffrer ou dechiffrer un message ? (réponse possible : cypher et decipher) ')
+def await_input() -> None:
+    """
+    Fonction permettant d'attendre une saisie utilisateur pour continuer
+    :return: None
+    """
 
-    if choice == 'cypher':
-        cypher_message = vigenere_cypher()
-        print('Message chiffré: ', cypher_message)
-    elif choice == 'decipher':
-        decipher_message = vigenere_decipher()
-        print('Message déchiffré: ', decipher_message)
-    elif choice == 'kasiski':
-        possible_length = {}
-        all_position = findAllRepetitions('MFUVAHGUTSGVMFUGUJPPEQTQSOUCIFP',  possible_length)
-        refineMultiple(all_position)
-    elif choice == 'cryptanalyse':
-        divide_text('MFUVAHGUTSGVMFUTUJPPEQTQSOUCIFP')
-    else:
-        print()
+    input("Appuyez sur Entrée pour continuer...")
+
+if __name__ == "__main__":
+    main_title = "Chiffrement de Vigenère\nAppuyez sur les flèches pour naviguer et sur Entrée pour sélectionner"
+    main_options = ["Chiffrement", "Déchiffrement", 'Test de kasiski', 'Cryptanalyse', None, "Quitter"]
+    main_menu = TerminalMenu(main_options, title=main_title, cycle_cursor=True, clear_screen=True)
+
+    while True:
+        main_entry_index = main_menu.show()
+        # Chiffrement
+        if main_entry_index == 0:
+            vigenere_cipher_input(True)
+            await_input()
+        # Déchiffrement
+        elif main_entry_index == 1:
+            vigenere_cipher_input(False)
+            await_input()
+        # Test de Kasiski
+        elif main_entry_index == 2:
+            kasiski_input()
+            await_input()
+        # Cryptanalyse
+        elif main_entry_index == 3:
+            cryptanalyse_input()
+            await_input()
+        # Quitter
+        elif main_entry_index == len(main_options) - 1 or main_entry_index is None:
+            print("Au revoir !")
+            exit(0)
+
