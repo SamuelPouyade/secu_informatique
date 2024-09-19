@@ -87,19 +87,7 @@ if __name__ == "__main__":
     main_title = "Comparaison MD5\nAppuyez sur les flèches pour naviguer et sur Entrée pour sélectionner"
     main_options = ["Retrouver un Hash", "Enregistrer un Hash", None, "Quitter"]
     main_menu = TerminalMenu(main_options, title=main_title, cycle_cursor=True, clear_screen=True)
-
-    select_hash_title = "Retrouver un Hash\nChoisissez le Hash à retrouver dans la liste"
-    select_hash_options = list(list_hash())
-    select_hash_options.append(None)
-    select_hash_options.append("Retour")
-    select_hash_menu = TerminalMenu(select_hash_options, title=select_hash_title, cycle_cursor=True, clear_screen=True)
     select_hash_back = False
-
-    select_file_title = "Retrouver un Hash\nChoisissez le fichier contenant les mots de passe à comparer"
-    select_file_options = list(list_text_files())
-    select_file_options.append(None)
-    select_file_options.append("Retour")
-    select_file_menu = TerminalMenu(select_file_options, title=select_file_title, cycle_cursor=True, clear_screen=True)
     select_file_back = False
 
     while True:
@@ -107,6 +95,12 @@ if __name__ == "__main__":
         # Retrouver un Hash
         if main_entry_index == 0:
             while not select_hash_back:
+                select_hash_title = "Retrouver un Hash\nChoisissez le Hash à retrouver dans la liste"
+                select_hash_options = list(list_hash())
+                select_hash_options.append(None)
+                select_hash_options.append("Retour")
+                select_hash_menu = TerminalMenu(select_hash_options, title=select_hash_title, cycle_cursor=True,
+                                                clear_screen=True)
                 select_hash_entry_index = select_hash_menu.show()
                 # Retour
                 if select_hash_entry_index == len(select_hash_options) - 1 or select_hash_entry_index is None or \
@@ -115,6 +109,12 @@ if __name__ == "__main__":
                 # Hash sélectionné
                 else:
                     while not select_file_back:
+                        select_file_title = "Retrouver un Hash\nChoisissez le fichier contenant les mots de passe à comparer"
+                        select_file_options = list(list_text_files())
+                        select_file_options.append(None)
+                        select_file_options.append("Retour")
+                        select_file_menu = TerminalMenu(select_file_options, title=select_file_title, cycle_cursor=True,
+                                                        clear_screen=True)
                         select_file_entry_index = select_file_menu.show()
                         # Retour
                         if select_file_entry_index == len(select_file_options) - 1 or select_file_entry_index is None or \
