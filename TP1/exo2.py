@@ -179,6 +179,10 @@ def findAllRepetitions (text: string) :
 
         suite = text[start_number:end_number]
 
+        # Si la chaine contient un espace nous l'ignorons.
+        if ' ' in suite:
+            continue
+
         if suite == last_word:
             continue
 
@@ -282,15 +286,15 @@ def refineMultiple (object) :
 def divide_text (text):
     all_position = findAllRepetitions(text)
     all_length = refineMultiple(all_position)
+    text_without_space = text.replace(' ', '')
+
 
     if len(all_length) != 0 or all_length != 0:
-        for number in all_length:
-            print(number)
-            group = re.findall(f'.{{1,{number}}}', text)
-            for i, char in enumerate(text):
-                group[i % number] += char
-
-            print(group)
+        for length in all_length:
+            redefined_table = [''] * length
+            for position, char in enumerate(text_without_space):
+                redefined_table[position % length] += char
+            print('Pour un tableau de taille: ', length, ' Le texte redéfini se sépare tel quel: ', redefined_table)
 
 def await_input() -> None:
     """
