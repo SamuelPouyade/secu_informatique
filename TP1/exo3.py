@@ -6,12 +6,24 @@ from simple_term_menu import TerminalMenu
 
 
 def list_hash(file="hashlist", encoding="utf-8"):
+    """
+    Liste les hashs contenus dans un fichier
+    :param file: le fichier contenant les hashs
+    :param encoding: l'encodage du fichier
+    :return: la liste des hashs (Generator)
+    """
+    # Création du fichier s'il n'existe pas
     if not os.path.isfile(file):
         open(file, "w+", encoding=encoding).close()
     return (hash_text.strip() for hash_text in open(file, "r", encoding=encoding))
 
 
 def list_text_files(directory="."):
+    """
+    Liste les fichiers .txt dans un répertoire
+    :param directory: le répertoire ciblé
+    :return: La liste des fichiers .txt (Generator)
+    """
     return (file for file in os.listdir(directory) if
             os.path.isfile(os.path.join(directory, file)) and file.endswith('.txt'))
 
@@ -46,10 +58,13 @@ def find_hash_in_file(hash: str, file_name: str) -> None:
     :param file_name: le fichier contenant les mots de passe
     """
     print(f"Recherche du mot de passe correspondant au hash \"{hash}\" dans le fichier \"{file_name}\"...")
+
+    # Timer pour mesurer le temps d'exécution
     timer_start = time.time()
     password = compare_md5_hash_to_file(hash, file_name)
     timer_end = time.time()
 
+    # Affichage des résultats
     if password != "":
         print(f"Le mot de passe est : {password}")
         print(f"Temps d'exécution : {round(timer_end - timer_start, 2)} secondes")
@@ -83,7 +98,7 @@ def register_hash() -> None:
 
 
 if __name__ == "__main__":
-    # Setup terminal menus
+    # Setup menus de terminal
     main_title = "Comparaison MD5\nAppuyez sur les flèches pour naviguer et sur Entrée pour sélectionner"
     main_options = ["Retrouver un Hash", "Enregistrer un Hash", None, "Quitter"]
     main_menu = TerminalMenu(main_options, title=main_title, cycle_cursor=True, clear_screen=True)
@@ -95,6 +110,7 @@ if __name__ == "__main__":
         # Retrouver un Hash
         if main_entry_index == 0:
             while not select_hash_back:
+                # Setup du sous menu à chaque fois qu'on y accède pour actualiser la liste
                 select_hash_title = "Retrouver un Hash\nChoisissez le Hash à retrouver dans la liste"
                 select_hash_options = list(list_hash())
                 select_hash_options.append(None)
@@ -109,6 +125,7 @@ if __name__ == "__main__":
                 # Hash sélectionné
                 else:
                     while not select_file_back:
+                        # Setup du sous menu à chaque fois qu'on y accède pour actualiser la liste
                         select_file_title = "Retrouver un Hash\nChoisissez le fichier contenant les mots de passe à comparer"
                         select_file_options = list(list_text_files())
                         select_file_options.append(None)
