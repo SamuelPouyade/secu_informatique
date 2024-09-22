@@ -1,6 +1,6 @@
 import string
-import re
 import collections
+import re
 from simple_term_menu import TerminalMenu
 
 def vigenere_cipher_input(encrypt=True) -> None:
@@ -62,7 +62,13 @@ def cryptanalyse_input():
     while input_text == "":
         input_text = input("Entrez le message à cryptanalyser : ")
 
-    divide_text(input_text)
+    all_tab_to_analyse = divide_text(input_text)
+
+    # for element in all_tab_to_analyse:
+        # print(element)
+    for i in range(len(all_tab_to_analyse)):
+        find_key(all_tab_to_analyse[i])
+
 
 
 def convert_letter_to_number(text: string):
@@ -121,6 +127,7 @@ def vigenere_decipher(message: string, decipher_key: string):
     decipher_message = []
 
     for position in message:
+        print(decipher_key[counter])
         if position < 0 or position > 25:
             final_position.append(position)
         else:
@@ -163,6 +170,7 @@ def findAllRepetitions (text: string) :
     last_start_number = 0
     end_number = 2
     last_word = ''
+    text = re.sub(r'[^A-Za-z]', '', text)
 
     while start_number < (length // 2) :
         if end_number < length // 2:
@@ -201,7 +209,7 @@ def findAllRepetitions (text: string) :
                 position = text.find(suite, last_occurence)
                 all_occurence.append(position)
                 # On augmente de 1 juste pour avoir un décalage et trouver la seconde position.
-                last_occurence = position + 1
+                last_occurence = position + len(suite)
 
             for i in range(len(all_occurence) - 1):
                 if all_occurence[i] == 0 :
@@ -274,27 +282,52 @@ def refineMultiple (object) :
             print('Aucun multiple est présent pour chacunes des chaines se répétant')
             most_frequent_multiple = collections.Counter(all_values).most_common(int(len(set(all_values)) * 0.10))
             multiple_without_repetitions = []
-            for element in most_frequent_multiple:
-                multiple_without_repetitions.append(element[0])
+            if most_frequent_multiple:
+                for element in most_frequent_multiple:
+                    multiple_without_repetitions.append(element[0])
+            else:
+                for element in all_values:
+                    multiple_without_repetitions.append(element)
             print('Les multiples qui apparaissent 10% de fois plus que les autres sont : ', multiple_without_repetitions)
             return multiple_without_repetitions
         else:
             most_frequent_multiple = collections.Counter(all_values).most_common()[0][0]
+            print(collections.Counter(all_values).most_common())
             print('La clé est de la taille : ', most_frequent_multiple)
             return most_frequent_multiple
 
-def divide_text (text):
+def divide_text (text) -> list:
     all_position = findAllRepetitions(text)
     all_length = refineMultiple(all_position)
     text_without_space = text.replace(' ', '')
-
+    all_separates_tab = []
 
     if len(all_length) != 0 or all_length != 0:
         for length in all_length:
             redefined_table = [''] * length
             for position, char in enumerate(text_without_space):
                 redefined_table[position % length] += char
-            print('Pour un tableau de taille: ', length, ' Le texte redéfini se sépare tel quel: ', redefined_table)
+            # print('Pour un tableau de taille: ', length, ' Le texte redéfini se sépare tel quel: ', redefined_table)
+            all_separates_tab.append(redefined_table)
+
+    return all_separates_tab
+
+def find_key(all_tab_to_analyse)-> str:
+    length_of_key = len(all_tab_to_analyse)
+    all_possible_keys = []
+    all_possible_caracteres = ['E', 'A', 'I', 'S', 'T']
+
+    for caractere in all_possible_caracteres:
+        key = ''
+        for element in all_tab_to_analyse:
+            main_character = collections.Counter(element).most_common()[0][0]
+
+            position = ord(main_character) - ord(caractere)
+            key += chr(ord('A') + (position % 26))
+        all_possible_keys.append(key)
+
+    print(f"Pour une clé de longueur : \"{length_of_key}\" nous obtenons la clé suivante: ", all_possible_keys)
+
 
 def await_input() -> None:
     """
