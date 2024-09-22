@@ -1,6 +1,10 @@
+import datetime
+import os
 import string
 import collections
 import re
+
+from Crypto.SelfTest.Cipher.test_OFB import file_name
 from simple_term_menu import TerminalMenu
 
 def vigenere_cipher_input(encrypt=True) -> None:
@@ -63,9 +67,15 @@ def cryptanalyse_input():
         input_text = input("Entrez le message à cryptanalyser : ")
 
     all_tab_to_analyse = divide_text(input_text)
+    current_date = datetime.datetime.now()
+    fileName = f"Liste_de_clé_{current_date}"
+    sub_folder = 'liste_cle_obtenus'
+    file_path = os.path.join(sub_folder, fileName)
 
     for i in range(len(all_tab_to_analyse)):
-        find_key(all_tab_to_analyse[i])
+        find_key(all_tab_to_analyse[i], file_path)
+
+    print(f'Fichier écrit dans le dossier {sub_folder}, le fichier porte le nom {fileName}')
 
 
 
@@ -259,7 +269,7 @@ def refineMultiple (all_repetitions) :
     :param all_repetitions: L'objet contenant toutes les répétitions
     :return: Retourne l'ensemble des tailles possibles
     '''
-    print('Voici pour chaque suite les multiples pouvant définir la taille de la clé: ', object)
+    print('Voici pour chaque suite les multiples pouvant définir la taille de la clé: ', all_repetitions)
     print('Un second traitement arrive pour afiner les résultats...')
 
     if len(all_repetitions) == 0:
@@ -315,7 +325,7 @@ def divide_text (text: string) -> list:
 
     return all_separates_tab
 
-def find_key(all_character_string_to_analyse)-> None:
+def find_key(all_character_string_to_analyse, file_path)-> None:
     """
     Fonction permettant de trouver toutes les clés possibles en fonction de chaines de caractères
     :param all_character_string_to_analyse: Un tableau contenant toutes les chaines de caractères à analyser
@@ -338,7 +348,10 @@ def find_key(all_character_string_to_analyse)-> None:
                 key += chr(ord('A') + (position % 26))
             all_possible_keys.append(key)
 
-    print(f"Pour une clé de longueur : \"{length_of_key}\" nous obtenons la clé suivante: ", all_possible_keys)
+    with open(file_path, 'a') as file:
+        file.write('Taille de la clé : ' + str(length_of_key) + '\n')
+        for key in all_possible_keys:
+            file.write(key + '\n')
 
 
 def get_all_max_repetitions(all_character_string_to_analyse, character_to_be_analysed):
