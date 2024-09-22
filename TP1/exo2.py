@@ -64,8 +64,6 @@ def cryptanalyse_input():
 
     all_tab_to_analyse = divide_text(input_text)
 
-    # for element in all_tab_to_analyse:
-        # print(element)
     for i in range(len(all_tab_to_analyse)):
         find_key(all_tab_to_analyse[i])
 
@@ -255,30 +253,30 @@ def delete_useless_data(suite, possible_length):
     return possible_length
 
 
-def refineMultiple (object) :
+def refineMultiple (all_repetitions) :
     '''
     Fonction permettant d'affiner les choix selectionnables par l'utilisateur
-    :param object: L'objet contenant toutes les répétitions
+    :param all_repetitions: L'objet contenant toutes les répétitions
     :return: Retourne l'ensemble des tailles possibles
     '''
     print('Voici pour chaque suite les multiples pouvant définir la taille de la clé: ', object)
     print('Un second traitement arrive pour afiner les résultats...')
 
-    if len(object) == 0:
+    if len(all_repetitions) == 0:
         print('Aucune suite ne se répète, nous ne pouvons pas trouver la longueur de la clé')
         return []
-    elif len(object) == 1:
-        first_key = list(object.keys())[0]
-        print('Les possibilités sont: ', object[first_key])
-        return object[first_key]
-    elif len(object) > 1:
+    elif len(all_repetitions) == 1:
+        first_key = list(all_repetitions.keys())[0]
+        print('Les possibilités sont: ', all_repetitions[first_key])
+        return all_repetitions[first_key]
+    elif len(all_repetitions) > 1:
         all_values = []
-        for property in object:
-            for value in object[property]:
+        for property in all_repetitions:
+            for value in all_repetitions[property]:
                 all_values.append(value)
 
         most_frequent_multiple = collections.Counter(all_values).most_common()[0][1]
-        if most_frequent_multiple != len(object):
+        if most_frequent_multiple != len(all_repetitions):
             print('Aucun multiple est présent pour chacunes des chaines se répétant')
             most_frequent_multiple = collections.Counter(all_values).most_common(int(len(set(all_values)) * 0.10))
             multiple_without_repetitions = []
@@ -296,7 +294,12 @@ def refineMultiple (object) :
             print('La clé est de la taille : ', most_frequent_multiple)
             return most_frequent_multiple
 
-def divide_text (text) -> list:
+def divide_text (text: string) -> list:
+    """
+    Permet de séparer le texte par la longueur de la clé possible
+    :param text: Le texte chiffré
+    :return: Retourne un tableau contenant le texte séparé en plusieurs longueurs
+    """
     all_position = findAllRepetitions(text)
     all_length = refineMultiple(all_position)
     text_without_space = text.replace(' ', '')
@@ -312,21 +315,63 @@ def divide_text (text) -> list:
 
     return all_separates_tab
 
-def find_key(all_tab_to_analyse)-> str:
-    length_of_key = len(all_tab_to_analyse)
+def find_key(all_character_string_to_analyse)-> None:
+    """
+    Fonction permettant de trouver toutes les clés possibles en fonction de chaines de caractères
+    :param all_character_string_to_analyse: Un tableau contenant toutes les chaines de caractères à analyser
+    """
+    length_of_key = len(all_character_string_to_analyse)
     all_possible_keys = []
     all_possible_caracteres = ['E', 'A', 'I', 'S', 'T']
+    character_to_be_analysed = {}
+    all_word = []
 
-    for caractere in all_possible_caracteres:
-        key = ''
-        for element in all_tab_to_analyse:
-            main_character = collections.Counter(element).most_common()[0][0]
+    get_all_max_repetitions(all_character_string_to_analyse, character_to_be_analysed)
 
-            position = ord(main_character) - ord(caractere)
-            key += chr(ord('A') + (position % 26))
-        all_possible_keys.append(key)
+    build_word(0, '', all_word, character_to_be_analysed)
+
+    for possible_charactere in all_possible_caracteres:
+        for word in all_word:
+            key = ''
+            for character in word:
+                position = ord(character) - ord(possible_charactere)
+                key += chr(ord('A') + (position % 26))
+            all_possible_keys.append(key)
 
     print(f"Pour une clé de longueur : \"{length_of_key}\" nous obtenons la clé suivante: ", all_possible_keys)
+
+
+def get_all_max_repetitions(all_character_string_to_analyse, character_to_be_analysed):
+    """
+    Fonction permettant de trouver toutes les lettres qui se répètent le plus. Tout en prenant en compte que plusieurs lettres ont le même nombre de répétitions
+    :param all_character_string_to_analyse: Ensemble de chaine de caractères à analyser
+    :param character_to_be_analysed: Tableau qui contiendra les caractères à analyser après cette fonction
+    :return:
+    """
+    position = 0
+    for element in all_character_string_to_analyse:
+        character_of_element = []
+        all_repetitions = collections.Counter(element)
+        max_repetition = collections.Counter(element).most_common(1)[0][1]
+        for character in element:
+            if (ord(character) - ord('A')) < 0 or (ord(character) - ord('A')) > 25:
+                continue
+            else:
+                if all_repetitions[character] == max_repetition and character not in character_of_element:
+                    character_of_element.append(character)
+        character_to_be_analysed[position] = character_of_element
+        position += 1
+
+
+def build_word(actual_position: int, partial_word, all_word, all_position_with_letter) :
+    if actual_position == len(all_position_with_letter):
+        all_word.append(partial_word)
+        return
+
+    for letter in all_position_with_letter[actual_position]:
+        word = partial_word + letter
+
+        build_word(actual_position + 1, word, all_word, all_position_with_letter)
 
 
 def await_input() -> None:
