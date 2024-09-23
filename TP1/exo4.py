@@ -18,8 +18,6 @@ def get_passwords(size, pwd=""):
             yield pwd+char
 
 
-
-
 if __name__ == "__main__":
     fileName = 'archive.zip'
     with ZipFile(fileName) as fs:
