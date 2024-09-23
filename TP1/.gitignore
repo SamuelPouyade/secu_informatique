@@ -159,6 +159,8 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
+# Exo 2
+liste_cle_obtenus/
 
 # Exo 3
 rockyou.txt
@@ -166,3 +168,7 @@ hashlist
 
 # Exo 4
 archive.zip
+cat.jpg
+
+# Exo 5
+four-digit-pin-codes-sorted-by-frequency-withcount.csv
