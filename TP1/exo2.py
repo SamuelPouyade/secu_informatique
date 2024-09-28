@@ -4,7 +4,6 @@ import string
 import collections
 import re
 
-from Crypto.SelfTest.Cipher.test_OFB import file_name
 from simple_term_menu import TerminalMenu
 
 def vigenere_cipher_input(encrypt=True) -> None:
@@ -32,12 +31,9 @@ def vigenere_cipher_input(encrypt=True) -> None:
         except ValueError:
             print("Erreur lors de la saisie de la clé")
 
-    if encrypt:
-        message = vigenere_cipher(input_text, input_offset)
-        print('Le message chiffré est: ', message)
-    else:
-        message = vigenere_decipher(input_text, input_offset)
-        print('Le message déchiffré est: ', message)
+    message = vigenere_cipher(input_text, input_offset, encrypt)
+
+    print(f"Message {"chiffré" if encrypt else "déchiffré"} : {message}")
 
 def kasiski_input():
     """
@@ -81,8 +77,9 @@ def cryptanalyse_input():
 
 def convert_letter_to_number(text: string):
     """
-    :param text: the message to be encrypted
-    :return: the encrypted message
+    Fonction permettant de convertir des lettres en nombres
+    :param text: les lettres à convertir
+    :return: Le message convertit
     """
 
     upper_text = text.upper()
@@ -95,7 +92,13 @@ def convert_letter_to_number(text: string):
     return positions
 
 
-def vigenere_cipher(message: string, encryption_key: string):
+def vigenere_cipher(message: string, encryption_key: string, encrypt=True) -> str:
+    """
+    Fonction permettant de chiffrer ou de déchiffrer un message à l'aide du chiffrement de Vigenere
+    :param message: Le message à chiffrer
+    :param encryption_key: La clé de chiffrement
+    :return: Le message chiffré
+    """
     message = convert_letter_to_number(message)
 
     position_of_letter_of_encryption_key = convert_letter_to_number(encryption_key)
@@ -112,40 +115,17 @@ def vigenere_cipher(message: string, encryption_key: string):
     for position in message:
         if position < 0 or position > 25:
             final_position.append(position)
-        else:
+        elif encrypt:
             final_position.append((position + encryption_key[counter]) % 26)
+            counter += 1
+        else:
+            final_position.append((position - encryption_key[counter]) % 26)
             counter += 1
 
     for position in final_position:
         cypher_message.append(chr(ord('A') + position))
 
     return ''.join(cypher_message)
-
-
-def vigenere_decipher(message: string, decipher_key: string):
-    message = convert_letter_to_number(message)
-    position_of_letter_of_encryption_key = convert_letter_to_number(decipher_key)
-
-    if len(message) > len(position_of_letter_of_encryption_key):
-        multiplicator = (len(message) // len(position_of_letter_of_encryption_key)) + 1
-        decipher_key = position_of_letter_of_encryption_key * multiplicator
-
-    counter = 0
-    final_position = []
-    decipher_message = []
-
-    for position in message:
-        print(decipher_key[counter])
-        if position < 0 or position > 25:
-            final_position.append(position)
-        else:
-            final_position.append((position - decipher_key[counter]) % 26)
-            counter += 1
-
-    for position in final_position:
-        decipher_message.append(chr(ord('A') + position))
-
-    return ''.join(decipher_message)
 
 def get_all_multiple (number: int) -> [int]:
     '''
@@ -317,10 +297,11 @@ def divide_text (text: string) -> list:
 
     if len(all_length) != 0 or all_length != 0:
         for length in all_length:
+            if length  > 15:
+                continue
             redefined_table = [''] * length
             for position, char in enumerate(text_without_space):
                 redefined_table[position % length] += char
-            # print('Pour un tableau de taille: ', length, ' Le texte redéfini se sépare tel quel: ', redefined_table)
             all_separates_tab.append(redefined_table)
 
     return all_separates_tab
@@ -377,6 +358,14 @@ def get_all_max_repetitions(all_character_string_to_analyse, character_to_be_ana
 
 
 def build_word(actual_position: int, partial_word, all_word, all_position_with_letter) :
+    """
+    Fonction récursive permettant de créer des mots à partir de position de caractères dans le mot et de caractères
+    :param actual_position: Position à laquelle nous nous trouvons
+    :param partial_word: le mot crée partiellement
+    :param all_word: Tout les mots possibles
+    :param all_position_with_letter: La position avec la ou les lettres à tester
+    :return:
+    """
     if actual_position == len(all_position_with_letter):
         all_word.append(partial_word)
         return
