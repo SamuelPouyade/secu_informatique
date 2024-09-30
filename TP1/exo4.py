@@ -26,12 +26,12 @@ def get_alphabet() -> list:
     return alphabet
 
 
-def get_passwords(size, pwd="") -> str:
+def get_passwords(size, pwd=""):
     """
     Fonction récursive pour générer les mots de passe de taille "size"
     :param size: la taille des mots de passe
     :param pwd: le mot de passe en cours de construction
-    :return: les mots de passe
+    :return: les mots de passe (Générateur)
     """
     if size != 1:
         for char in get_alphabet():
