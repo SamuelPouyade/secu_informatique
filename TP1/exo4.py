@@ -1,4 +1,17 @@
+import os
 from zipfile import ZipFile
+
+from simple_term_menu import TerminalMenu
+
+
+def list_zip(directory=".") -> list:
+    """
+    Liste les fichiers .zip dans un répertoire
+    :param directory: le répertoire ciblé
+    :return: La liste des fichiers .zip
+    """
+    return list(file for file in os.listdir(directory) if
+                os.path.isfile(os.path.join(directory, file)) and file.endswith('.zip'))
 
 
 def get_alphabet() -> list:
@@ -21,10 +34,10 @@ def get_passwords(size, pwd="") -> str:
     """
     if size != 1:
         for char in get_alphabet():
-            yield from get_passwords(size-1, pwd+char)
+            yield from get_passwords(size - 1, pwd + char)
     else:
         for char in get_alphabet():
-            yield pwd+char
+            yield pwd + char
 
 
 def archive_brute_force(filename: str) -> str:
@@ -35,14 +48,14 @@ def archive_brute_force(filename: str) -> str:
     """
     with ZipFile(filename) as fs:
         try:
-            fs.extractall(pwd = bytes('', 'utf-8'))
+            fs.extractall(pwd=bytes('', 'utf-8'))
         except RuntimeError as pwdRequired:
             for i in range(6):
                 pwd_size = i + 1
                 print(f"Mot de passe essayé : {pwd_size}")
                 for password in get_passwords(pwd_size):
                     try:
-                        fs.extractall(pwd = bytes(password, 'utf-8'))
+                        fs.extractall(pwd=bytes(password, 'utf-8'))
                     except Exception as wrongPwd:
                         continue
                     return password
@@ -50,8 +63,24 @@ def archive_brute_force(filename: str) -> str:
 
 
 if __name__ == "__main__":
-    password = archive_brute_force('archive.zip')
-    if not password:
-        print("Aucun mot de passe trouvé")
-    else:
-        print("Mot de passe trouvé :", password)
+    # Setup menus de terminal
+    main_title = "ZIP Brute force\nChoisissez le fichier à brute forcer..."
+    main_options = list_zip()
+    main_options.append(None)
+    main_options.append("Quitter")
+    main_menu = TerminalMenu(main_options, title=main_title, cycle_cursor=True, clear_screen=True)
+
+    while True:
+        main_entry_index = main_menu.show()
+        # Quitter
+        if main_entry_index == len(main_options) - 1 or main_entry_index is None:
+            print("Au revoir !")
+            exit(0)
+        # Fichier ZIP choisi
+        else:
+            archive_password = archive_brute_force(main_options[main_entry_index])
+            if not archive_password:
+                print("Aucun mot de passe trouvé")
+            else:
+                print("Mot de passe trouvé :", archive_password)
+            input("Appuyez sur Entrée pour continuer...")
