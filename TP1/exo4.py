@@ -50,12 +50,14 @@ def archive_brute_force(filename: str) -> str:
         try:
             fs.extractall(pwd=bytes('', 'utf-8'))
         except RuntimeError as pwdRequired:
+            # On limite la taille du mot de passe à 6 caractères
             for i in range(6):
                 pwd_size = i + 1
                 print(f"Mot de passe essayé : {pwd_size}")
                 for password in get_passwords(pwd_size):
                     try:
                         fs.extractall(pwd=bytes(password, 'utf-8'))
+                    # La fonction extractall() lève une exception si le mot de passe est incorrect
                     except Exception as wrongPwd:
                         continue
                     return password
