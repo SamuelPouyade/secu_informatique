@@ -1,4 +1,5 @@
 import os
+import time
 from zipfile import ZipFile
 
 from simple_term_menu import TerminalMenu
@@ -47,13 +48,14 @@ def archive_brute_force(filename: str) -> str:
     :return: le mot de passe de l'archive
     """
     with ZipFile(filename) as fs:
+        # On essaye d'abord sans mot de passe
         try:
             fs.extractall(pwd=bytes('', 'utf-8'))
         except RuntimeError as pwdRequired:
             # On limite la taille du mot de passe à 6 caractères
             for i in range(6):
                 pwd_size = i + 1
-                print(f"Mot de passe essayé : {pwd_size}")
+                print(f"Taille de mot de passe en cours d'essaie : {pwd_size}")
                 for password in get_passwords(pwd_size):
                     try:
                         fs.extractall(pwd=bytes(password, 'utf-8'))
@@ -80,9 +82,12 @@ if __name__ == "__main__":
             exit(0)
         # Fichier ZIP choisi
         else:
+            timer_start = time.time()
             archive_password = archive_brute_force(main_options[main_entry_index])
+            timer_end = time.time()
             if not archive_password:
                 print("Aucun mot de passe trouvé")
             else:
                 print("Mot de passe trouvé :", archive_password)
+            print("Temps d'exécution :", round(timer_end - timer_start, 2), "secondes")
             input("Appuyez sur Entrée pour continuer...")
