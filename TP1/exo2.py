@@ -3,7 +3,6 @@ import os
 import string
 import collections
 import re
-
 from simple_term_menu import TerminalMenu
 
 def vigenere_cipher_input(encrypt=True) -> None:
@@ -95,9 +94,9 @@ def convert_letter_to_number(text: string):
 def vigenere_cipher(message: string, encryption_key: string, encrypt=True) -> str:
     """
     Fonction permettant de chiffrer ou de déchiffrer un message à l'aide du chiffrement de Vigenere
-    :param message: Le message à chiffrer
+    :param message: Le message à chiffrer ou déchiffrer
     :param encryption_key: La clé de chiffrement
-    :return: Le message chiffré
+    :return: Le message chiffré ou déchiffré
     """
     message = convert_letter_to_number(message)
 
@@ -310,6 +309,7 @@ def find_key(all_character_string_to_analyse, file_path)-> None:
     """
     Fonction permettant de trouver toutes les clés possibles en fonction de chaines de caractères
     :param all_character_string_to_analyse: Un tableau contenant toutes les chaines de caractères à analyser
+    :param file_path : Endroit ou sera écrit le fichier contenant les clés possibles
     """
     length_of_key = len(all_character_string_to_analyse)
     all_possible_keys = []

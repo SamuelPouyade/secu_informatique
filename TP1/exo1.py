@@ -1,6 +1,5 @@
 from simple_term_menu import TerminalMenu
 
-
 def cesar_cipher(text: str, offset: int, encrypt=True) -> str:
     """
     Fonction permettant de chiffrer ou de déchiffrer un message en utilisant le chiffrement de César
