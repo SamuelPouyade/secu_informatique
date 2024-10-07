@@ -14,7 +14,7 @@ def find_pin_without_optimisation(ma_socket: socket.socket) -> None:
     """
     Fonction permettant de se connecter au site internet en testant tout les codes pin possibles
     :param ma_socket: Socket utilisateur permettant de se connecter au site internet
-    :return:
+    :return: None
     """
     timer_start = time.time()
     pin_use = 0
@@ -50,7 +50,7 @@ def find_pin_with_a_sort(ma_socket: socket.socket) -> None:
     Fonction permettant de se connecter au site internet en testant tout les codes pin possibles dans un ordre précis
     grâce à un fichier csv
     :param ma_socket: Socket utilisateur permettant de se connecter au site internet
-    :return:
+    :return: None
     """
     timer_start = time.time()
     pin_use = 0
@@ -79,7 +79,7 @@ def restart_socket(ma_socket:socket.socket, server: str, port: int) -> socket.so
     Fonction permettant de renouveller la socket. Si nous voulons tester les deux méthodes sans quitter le programme il
     faut nécessairement passer par cette méthode.
     :param ma_socket: Socket utilisateur permettant de se connecter au site internet
-    :return:
+    :return: la socket renouvellée
     """
     ma_socket.close()
     ma_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

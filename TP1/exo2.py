@@ -52,7 +52,7 @@ def kasiski_input():
 def cryptanalyse_input():
     """
     Fonction permettant la saisie utilisateur d'un message dans le terminal et d'effectuer une cryptanalyse
-    :return: La liste des possibilité de longueur de clé
+    :return: La liste des possibilités de message
     """
 
     input_text = ""
@@ -127,11 +127,12 @@ def vigenere_cipher(message: string, encryption_key: string, encrypt=True) -> st
     return ''.join(cypher_message)
 
 def get_all_multiple (number: int) -> [int]:
-    '''
+    """
     Fonction permettant d'avoir tout les multiples d'un nombre
     :param number: Le nombre à analyser
     :return: L'ensemble des multiples et le nombre analysé
-    '''
+    """
+
     half_number = number // 2
     all_multiple = []
     all_multiple.append(number)
@@ -145,12 +146,12 @@ def get_all_multiple (number: int) -> [int]:
 
 
 def findAllRepetitions (text: string) :
-    '''
+    """
     Fonction permettant de trouver toutes les répétitions possibles sans effectuer de tri
     :param text: Le texte à analyser
     :param possible_length: Objet stockant toutes les tailles possibles
     :return: Un objet contenant toutes les tailles possibles associés aux mots répétés
-    '''
+    """
     possible_length = {}
     length = len(text)
     start_number = 0
@@ -219,12 +220,12 @@ def findAllRepetitions (text: string) :
     return possible_length
 
 def delete_useless_data(suite, possible_length):
-    '''
+    """
     Fonction permettant de supprimer des valeurs inutiles
     :param suite: La suite de caractères
     :param possible_length: Le tableau contenant les différentes tailles possibles
     :return: Retourne le tableau sans doublon
-    '''
+    """
 
     data_to_delete = []
     for property in possible_length:
@@ -243,11 +244,12 @@ def delete_useless_data(suite, possible_length):
 
 
 def refineMultiple (all_repetitions) :
-    '''
+    """
     Fonction permettant d'affiner les choix selectionnables par l'utilisateur
     :param all_repetitions: L'objet contenant toutes les répétitions
     :return: Retourne l'ensemble des tailles possibles
-    '''
+    """
+
     print('Voici pour chaque suite les multiples pouvant définir la taille de la clé: ', all_repetitions)
     print('Un second traitement arrive pour afiner les résultats...')
 
@@ -256,7 +258,7 @@ def refineMultiple (all_repetitions) :
         return []
     elif len(all_repetitions) == 1:
         first_key = list(all_repetitions.keys())[0]
-        print('Les possibilités sont: ', all_repetitions[first_key])
+        print('La possibilité est: ', all_repetitions[first_key])
         return all_repetitions[first_key]
     elif len(all_repetitions) > 1:
         all_values = []
@@ -340,7 +342,7 @@ def get_all_max_repetitions(all_character_string_to_analyse, character_to_be_ana
     Fonction permettant de trouver toutes les lettres qui se répètent le plus. Tout en prenant en compte que plusieurs lettres ont le même nombre de répétitions
     :param all_character_string_to_analyse: Ensemble de chaine de caractères à analyser
     :param character_to_be_analysed: Tableau qui contiendra les caractères à analyser après cette fonction
-    :return:
+    :return: Le tableau rempli des caractères à analyser
     """
     position = 0
     for element in all_character_string_to_analyse:
@@ -364,7 +366,7 @@ def build_word(actual_position: int, partial_word, all_word, all_position_with_l
     :param partial_word: le mot crée partiellement
     :param all_word: Tout les mots possibles
     :param all_position_with_letter: La position avec la ou les lettres à tester
-    :return:
+    :return: Tout les mots possibles
     """
     if actual_position == len(all_position_with_letter):
         all_word.append(partial_word)
