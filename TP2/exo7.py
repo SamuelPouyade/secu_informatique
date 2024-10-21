@@ -1,6 +1,5 @@
 import socket
 import sys
-from pydoc import plainpager
 
 
 def connect_to_server(server="51.195.253.124", port=4321) -> socket:
