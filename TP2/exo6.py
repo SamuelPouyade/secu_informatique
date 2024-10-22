@@ -1,5 +1,6 @@
 from PIL import Image
 import os
+import string
 
 from simple_term_menu import TerminalMenu
 
@@ -42,8 +43,8 @@ def decipher_simple_XOR():
                 os.remove(f"decrypted_file_simple{i}.jpg")
 
 
-def calculer_cle_xor():
-    with open('encrypted_file_hard.jpg', "rb") as encrypted_file:
+def calculer_cle_xor(input_file: string):
+    with open(input_file, "rb") as encrypted_file:
         header_chiffre = encrypted_file.read(25)
 
     with open('téléchargement.jpeg', "rb") as file:
@@ -57,6 +58,11 @@ def calculer_cle_xor():
     return cle_xor
 
 def find_repeated_sequences_max_half_length(numbers):
+    repeated_sequences = {}
+    if len(set(numbers)) == 1:
+        repeated_sequences[tuple(numbers)] = 1
+        return repeated_sequences
+
     repeated_sequences = {}
     max_length = len(numbers)
 
@@ -81,51 +87,56 @@ def apply_cyclic_XOR(encrypted_data, key):
 
     return decrypted_data
 
-def decipher_hard_XOR():
+def decipher_hard_XOR(all_sequence, input_file, output_file):
     """
     Déchiffre une image chiffrée avec la clé XOR calculée.
     """
-    # Charger l'image chiffrée
-    with open("encrypted_file_hard.jpg", "rb") as encrypted_file:
+    with open(input_file, "rb") as encrypted_file:
         encrypted_data = encrypted_file.read()
 
-    # Calculer la clé XOR
-    key = [132, 12, 73, 26, 152, 130, 82, 186, 31, 148, 36, 21, 196, 203, 15, 4]
+    for sequence in all_sequence:
+        key = tuple(sequence)
+        decrypted_data = apply_cyclic_XOR(encrypted_data, key)
 
-    # Appliquer le XOR avec la clé de manière cyclique
-    decrypted_data = apply_cyclic_XOR(encrypted_data, key)
+        with open(output_file, "wb") as decrypted_file:
+            decrypted_file.write(bytes(decrypted_data))
 
-    # Sauvegarder l'image déchiffrée
-    output_file = "decrypted_file_hard.jpg"
-    with open(output_file, "wb") as decrypted_file:
-        decrypted_file.write(bytes(decrypted_data))
-
-    # Vérifier si l'image est valide
-    try:
-        with Image.open(output_file) as img:
-            img.verify()
-        print(f"L'image déchiffrée {output_file} est valide.")
-    except (IOError, SyntaxError):
-        print(f"L'image déchiffrée {output_file} est invalide.")
-        os.remove(output_file)
+        try:
+            with Image.open(output_file) as img:
+                img.verify()
+            print(f"L'image déchiffrée {output_file} est valide.")
+            break
+        except (IOError, SyntaxError):
+            print(f"L'image déchiffrée {output_file} est invalide.")
+            os.remove(output_file)
 
 if __name__ == "__main__":
     # Setup du menu
     main_title = "Cryptographie symètrique\nAppuyez sur les flèches pour naviguer et sur Entrée pour sélectionner"
-    main_options = ["Déchiffrement simple", "Déchiffrement difficile", None, "Quitter"]
+    main_options = ["Déchiffrement simple", "Déchiffrement simple avancé", "Déchiffrement difficile", None, "Quitter"]
     main_menu = TerminalMenu(main_options, title=main_title, cycle_cursor=True, clear_screen=True)
 
     while True:
         main_entry_index = main_menu.show()
-        # Chiffrement
+        # Déchiffrement simple
         if main_entry_index == 0:
             decipher_simple_XOR()
             await_input()
-        # Déchiffrement
-        elif main_entry_index == 1:
-            all_key = calculer_cle_xor()
+        # Déchiffrement simple avancé
+        if main_entry_index == 1:
+            input_file = "encrypted_file_simple.jpg"
+            output_file = "decrypted_file_simple.jpg"
+            all_key = calculer_cle_xor(input_file)
             all_sequence = find_repeated_sequences_max_half_length(all_key)
-            decipher_hard_XOR()
+            decipher_hard_XOR(all_sequence, input_file, output_file)
+            await_input()
+        # Déchiffrement difficile
+        elif main_entry_index == 2:
+            input_file = "encrypted_file_hard.jpg"
+            output_file = "decrypted_file_hard.jpg"
+            all_key = calculer_cle_xor(input_file)
+            all_sequence = find_repeated_sequences_max_half_length(all_key)
+            decipher_hard_XOR(all_sequence, input_file, output_file)
             await_input()
         # Quitter
         elif main_entry_index == len(main_options) - 1 or main_entry_index is None:
