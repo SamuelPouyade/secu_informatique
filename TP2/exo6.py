@@ -4,11 +4,11 @@ import string
 
 from simple_term_menu import TerminalMenu
 
-def calculate_XOR(nombreDepart: int, cle: int) -> int:
+def calculate_xor(nombre_depart: int, cle: int) -> int:
     """
     Applique le XOR entre un byte et un élément de la clé.
     """
-    return nombreDepart ^ cle
+    return nombre_depart ^ cle
 
 def await_input() -> None:
     """
@@ -18,32 +18,39 @@ def await_input() -> None:
 
     input("Appuyez sur Entrée pour continuer...")
 
-def decipher_simple_XOR():
+def decipher_simple_xor(input_file, output_file):
     """
-    Fonction permettant d'ouvrir l'image chiffrée de manière simple en utilisant XOR
+    Fonction permettant d'ouvrir l'image chiffrée de manière simple en utilisant XOR et en réalisant un brute force
+    :param input_file: l'image chiffrée
+    :param output_file: l'image déchiffrée
     :return: Ecrit une image ouvrable
     """
-    with open("encrypted_file_simple.jpg", "rb") as encrypted_file:
+    with open(input_file, "rb") as encrypted_file:
         encrypted_data = encrypted_file.read()
 
         for i in range(256):
             decrypted_data = []
             for byte in encrypted_data:
-                decrypted_data.append((calculate_XOR(byte, i)))
+                decrypted_data.append((calculate_xor(byte, i)))
 
-            with open(f"decrypted_file_simple{i}.jpg", "wb") as decrypted_file:
+            with open(output_file, "wb") as decrypted_file:
                 decrypted_file.write(bytes(decrypted_data))
 
             try:
-                with Image.open(f"decrypted_file_simple{i}.jpg") as img:
+                with Image.open(output_file) as img:
                     img.verify()
-                print(f"L'image déchiffrée {f"decrypted_file_simple{i}.jpg"} est valide.")
+                print(f"L'image déchiffrée {output_file} est valide.")
                 break
             except (IOError, SyntaxError) as e:
-                os.remove(f"decrypted_file_simple{i}.jpg")
+                os.remove(output_file)
 
 
-def calculer_cle_xor(input_file: string):
+def calculate_key_xor(input_file: string):
+    """
+    Fonction permettant de calculer la clé utilisée pour chiffrée l'image
+    :param input_file:  l'image chiffrée
+    :return: Retourne la clé utilisée
+    """
     with open(input_file, "rb") as encrypted_file:
         header_chiffre = encrypted_file.read(25)
 
@@ -52,12 +59,18 @@ def calculer_cle_xor(input_file: string):
         print(header)
 
     cle_xor = bytearray()
-    for byte_chiffre, byte_attendu in zip(header_chiffre, header):
-        cle_xor.append(byte_chiffre ^ byte_attendu)
+    for byte_chiffre, expected_byte in zip(header_chiffre, header):
+        cle_xor.append(calculate_xor(byte_chiffre, expected_byte))
 
     return cle_xor
 
 def find_repeated_sequences_max_half_length(numbers):
+    """
+    Fonction permettant d'extraire les suites de chiffre qui se répetent afin de trouver la valeur de la clé de chiffrement
+    :param numbers: La suite de chiffre à analyser
+    :return: La ou les suites se répétant
+    """
+
     repeated_sequences = {}
     if len(set(numbers)) == 1:
         repeated_sequences[tuple(numbers)] = 1
@@ -74,7 +87,7 @@ def find_repeated_sequences_max_half_length(numbers):
     return repeated_sequences
 
 
-def apply_cyclic_XOR(encrypted_data, key):
+def apply_cyclic_xor(encrypted_data, key):
     """
     Applique le XOR cyclique avec la clé sur les données chiffrées.
     """
@@ -82,21 +95,25 @@ def apply_cyclic_XOR(encrypted_data, key):
     key_length = len(key)
 
     for i, byte in enumerate(encrypted_data):
-        decrypted_byte = byte ^ key[i % key_length]
+        decrypted_byte = calculate_xor(byte, key[i % key_length])
         decrypted_data.append(decrypted_byte)
 
     return decrypted_data
 
-def decipher_hard_XOR(all_sequence, input_file, output_file):
+def decipher_hard_xor(all_sequence, input_file, output_file):
     """
-    Déchiffre une image chiffrée avec la clé XOR calculée.
+    Déchiffre une image en ayant analysé son en tête.
+    :param all_sequence: Toutes les séquences possibles
+    :param input_file: l'image chiffrée
+    :param output_file: l'image déchiffrée
+    :return:
     """
     with open(input_file, "rb") as encrypted_file:
         encrypted_data = encrypted_file.read()
 
     for sequence in all_sequence:
         key = tuple(sequence)
-        decrypted_data = apply_cyclic_XOR(encrypted_data, key)
+        decrypted_data = apply_cyclic_xor(encrypted_data, key)
 
         with open(output_file, "wb") as decrypted_file:
             decrypted_file.write(bytes(decrypted_data))
@@ -120,23 +137,25 @@ if __name__ == "__main__":
         main_entry_index = main_menu.show()
         # Déchiffrement simple
         if main_entry_index == 0:
-            decipher_simple_XOR()
+            input_file = "encrypted_file_simple.jpg"
+            output_file = "decrypted_file_simple.jpg"
+            decipher_simple_xor(input_file, output_file)
             await_input()
         # Déchiffrement simple avancé
         if main_entry_index == 1:
             input_file = "encrypted_file_simple.jpg"
             output_file = "decrypted_file_simple.jpg"
-            all_key = calculer_cle_xor(input_file)
+            all_key = calculate_key_xor(input_file)
             all_sequence = find_repeated_sequences_max_half_length(all_key)
-            decipher_hard_XOR(all_sequence, input_file, output_file)
+            decipher_hard_xor(all_sequence, input_file, output_file)
             await_input()
         # Déchiffrement difficile
         elif main_entry_index == 2:
             input_file = "encrypted_file_hard.jpg"
             output_file = "decrypted_file_hard.jpg"
-            all_key = calculer_cle_xor(input_file)
+            all_key = calculate_key_xor(input_file)
             all_sequence = find_repeated_sequences_max_half_length(all_key)
-            decipher_hard_XOR(all_sequence, input_file, output_file)
+            decipher_hard_xor(all_sequence, input_file, output_file)
             await_input()
         # Quitter
         elif main_entry_index == len(main_options) - 1 or main_entry_index is None:
