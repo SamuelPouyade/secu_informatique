@@ -1,6 +1,7 @@
 from PIL import Image
 import os
 import string
+from tqdm import tqdm
 
 from simple_term_menu import TerminalMenu
 
@@ -25,10 +26,12 @@ def decipher_simple_xor(input_file, output_file):
     :param output_file: l'image déchiffrée
     :return: Ecrit une image ouvrable
     """
+    print("Déchiffrement de l'image...")
+
     with open(input_file, "rb") as encrypted_file:
         encrypted_data = encrypted_file.read()
 
-        for i in range(256):
+        for i in tqdm(range(256)):
             decrypted_data = []
             for byte in encrypted_data:
                 decrypted_data.append((calculate_xor(byte, i)))
@@ -54,14 +57,16 @@ def calculate_key_xor(input_file: string):
     with open(input_file, "rb") as encrypted_file:
         header_chiffre = encrypted_file.read(25)
 
+    # Utilisation d'une image trouvé sur internet au format JPEG.
+    # Cela permet de récupérer une en-tête juste.
     with open('téléchargement.jpeg', "rb") as file:
         header = file.read(25)
-        print(header)
 
     cle_xor = bytearray()
     for byte_chiffre, expected_byte in zip(header_chiffre, header):
         cle_xor.append(calculate_xor(byte_chiffre, expected_byte))
 
+    print("Clé utilisée pour chiffrer l'en-tête: ", cle_xor)
     return cle_xor
 
 def find_repeated_sequences_max_half_length(numbers):
@@ -70,6 +75,7 @@ def find_repeated_sequences_max_half_length(numbers):
     :param numbers: La suite de chiffre à analyser
     :return: La ou les suites se répétant
     """
+    print("Recherche d'une ou plusieurs suites se répétant dans la clé...")
 
     repeated_sequences = {}
     if len(set(numbers)) == 1:
@@ -108,10 +114,11 @@ def decipher_hard_xor(all_sequence, input_file, output_file):
     :param output_file: l'image déchiffrée
     :return:
     """
+    print("Déchiffrement de l'image...")
     with open(input_file, "rb") as encrypted_file:
         encrypted_data = encrypted_file.read()
 
-    for sequence in all_sequence:
+    for sequence in tqdm(all_sequence):
         key = tuple(sequence)
         decrypted_data = apply_cyclic_xor(encrypted_data, key)
 
@@ -124,7 +131,6 @@ def decipher_hard_xor(all_sequence, input_file, output_file):
             print(f"L'image déchiffrée {output_file} est valide.")
             break
         except (IOError, SyntaxError):
-            print(f"L'image déchiffrée {output_file} est invalide.")
             os.remove(output_file)
 
 if __name__ == "__main__":
