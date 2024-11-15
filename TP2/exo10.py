@@ -68,6 +68,7 @@ def find_pin_without_optimisation(ma_socket: socket.socket, password_length: int
     expected_message = repr(b'Welcome :)\n')
 
     for position in range(password_length):
+        print(f"Analyse de la position {position}...")
         temporary_times = []
         for password in partial_password:
             password_list = list(password)
@@ -97,7 +98,7 @@ def find_pin_without_optimisation(ma_socket: socket.socket, password_length: int
         for i in range(len(positions)):
             partial_password.append(positions[i][0])
 
-        print(partial_password)
+        print(f"En analysant la position {position}, voici les {value} résultats les plus probables :", partial_password)
 
     # Ici nous testons les 10 mots de passes trouvé
     for possible_password in partial_password:
