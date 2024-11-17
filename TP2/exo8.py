@@ -29,44 +29,49 @@ def is_valid_padding(soc: socket, cipher_block: str) -> bool:
     return False
 
 
-def decrypt(cipher: bytes, mode=AES.MODE_CBC):
+def decrypt_via_padding_oracle(cipher: bytes):
+    # Découpage du texte chiffré en blocs
     cipher_blocks = [cipher[i * AES.block_size:(i + 1) * AES.block_size] for i in range(len(cipher) // AES.block_size)]
-    res = b""
-    for _ in range(len(cipher_blocks) - 1):
-        plain = b""
-        last_cipher_block = cipher_blocks[-1]
+    # Initialisation du résultat
+    plain = b""
+
+    # Déchiffrement par blocs
+    for i in range(len(cipher_blocks) - 1):
+        plain_block = b""
         trail = b""
 
         connection = connect_to_server()
 
-        for i in range(AES.block_size):
-            for j in range(256):
-                flip = bytes([j])
-                cipher_block_attack = (15 - i) * b'\x00' + flip + trail
-                cipher_both_block = b"".join([cipher_block_attack, last_cipher_block])
+        # Attaque sur chaque octet du bloc
+        for block_position in range(AES.block_size):
+            # Test de chaque valeur possible
+            for byte_value in range(256):
+                cipher_block_attack = (15 - block_position) * b'\x00' + bytes([byte_value]) + trail
+                cipher_both_block = b"".join([cipher_block_attack, cipher_blocks[-(i + 1)]])
 
                 if is_valid_padding(connection, cipher_both_block.hex()):
-                    print(cipher_both_block.hex())
-                    last_plain = (i + 1) ^ cipher_blocks[-2][15 - i] ^ j
-                    plain = bytearray([last_plain]) + plain
+                    last_plain = (block_position + 1) ^ cipher_blocks[-(i + 2)][15 - block_position] ^ byte_value
+                    plain_block = bytearray([last_plain]) + plain_block
                     trail = b""
 
-                    for k in range(i + 1):
-                        last_byte = (i + 2) ^ plain[-k - 1] ^ cipher_blocks[-2][15 - k]
+                    for k in range(block_position + 1):
+                        last_byte = (block_position + 2) ^ plain_block[-k - 1] ^ cipher_blocks[-(i + 2)][15 - k]
                         trail = bytearray([last_byte]) + trail
 
                     break
-
         connection.close()
-        cipher_blocks = cipher_blocks[:-1]
-        res = plain + res
+        plain = b"".join([plain_block, plain])
+        print(plain)
 
-    return res[:-res[-1]]
+    return plain[:-plain[-1]]
+
+
+def main() -> None:
+    encrypted = open("./cbc_ciphertext", "r").read().strip()
+    plain = decrypt_via_padding_oracle(bytes.fromhex(encrypted))
+
+    print(plain)
 
 
 if __name__ == "__main__":
-    # Le serveur nous donne l'information qu'il attend une cle de 16 octets (128 bits)
-    encrypted = open("./cbc_ciphertext", "r").read().strip()
-    plain = decrypt(bytes.fromhex(encrypted))
-
-    print(plain)
+    main()
