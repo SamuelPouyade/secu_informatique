@@ -1,4 +1,4 @@
 ## DVWA
 ```shell
-docker run --rm -it -p 80:80 vulnerables/web-dvwa
+docker run --platform linux/amd64 --rm -it -p 8080:80 vulnerables/web-dvwa -d
 ```
