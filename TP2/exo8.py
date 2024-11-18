@@ -47,24 +47,26 @@ def is_valid_padding(soc: socket, cipher_block: str) -> bool:
     return False
 
 
-def decrypt_block(current_block: bytes, previous_block: bytes, connection: socket) -> bytearray:
+def decrypt_block(current_block: bytes, previous_block: bytes, block_size: int, connection: socket) -> bytearray:
     """
     Décrypte un bloc chiffré en utilisant la méthode du padding oracle
-    :param connection: Socket de connexion à l'oracle
-    :type connection: socket
     :param current_block: Bloc chiffré à déchiffrer
     :type current_block: bytes
     :param previous_block: Bloc précédent
     :type previous_block: bytes
+    :param block_size: Taille des blocs
+    :type block_size: int
+    :param connection: Socket de connexion à l'oracle
+    :type connection: socket
     :return: Bloc en clair
     :rtype: bytearray
     """
     # Initialisation des variables
-    buffer = bytearray(AES.block_size)
-    plain_block = bytearray(AES.block_size)
+    buffer = bytearray(block_size)
+    plain_block = bytearray(block_size)
 
     # Attaque sur chaque octet du bloc
-    for block_cursor in range(AES.block_size - 1, -1, -1):
+    for block_cursor in range(block_size - 1, -1, -1):
         # Test de chaque valeur possible
         for byte_value in range(256):
             buffer[block_cursor] = byte_value
@@ -72,32 +74,32 @@ def decrypt_block(current_block: bytes, previous_block: bytes, connection: socke
 
             if is_valid_padding(connection, cipher_block_attack.hex()):
                 # Calcul de l'octet en clair
-                plain_byte = (AES.block_size - block_cursor) ^ previous_block[block_cursor] ^ byte_value
+                plain_byte = (block_size - block_cursor) ^ previous_block[block_cursor] ^ byte_value
                 plain_block[block_cursor] = plain_byte
-                print(plain_block[block_cursor:])
 
                 # Mise à jour du buffer pour le prochain padding
-                for i in range(block_cursor, AES.block_size):
-                    buffer[i] = (AES.block_size - block_cursor + 1) ^ plain_block[i] ^ previous_block[i]
+                for i in range(block_cursor, block_size):
+                    buffer[i] = (block_size - block_cursor + 1) ^ plain_block[i] ^ previous_block[i]
 
                 break
 
     return plain_block
 
 
-def decrypt_via_padding_oracle(cipher: bytes, connection: socket) -> str:
+def decrypt_via_padding_oracle(cipher: bytes, block_size=AES.block_size, connection=connect_to_oracle()) -> str:
     """
-    Décrypte une donnée chiffrée avec AES-CBC utilisant du padding par la méthode
-    du padding oracle
+    Décrypte une donnée chiffrée utilisant du padding par la méthode du padding oracle
     :param cipher: Donnée chiffrée
     :type cipher: bytes
+    :param block_size: Taille des blocs (AES par défaut)
+    :type block_size: int
     :param connection: Socket de connexion à l'oracle
     :type connection: socket
     :return: Donnée en clair
     :rtype: str
     """
     # Découpage du texte chiffré en blocs
-    cipher_blocks = [cipher[i * AES.block_size:(i + 1) * AES.block_size] for i in range(len(cipher) // AES.block_size)]
+    cipher_blocks = [cipher[i * block_size:(i + 1) * block_size] for i in range(len(cipher) // block_size)]
 
     # Nombre de blocs (sans le IV)
     nb_blocks = len(cipher_blocks) - 1
@@ -112,11 +114,10 @@ def decrypt_via_padding_oracle(cipher: bytes, connection: socket) -> str:
         previous_block = cipher_blocks[-(i + 2)]
 
         # Déchiffrement du bloc
-        plain_block = decrypt_block(connection, current_block, previous_block)
+        plain_block = decrypt_block(current_block, previous_block, block_size, connection)
 
         # Ajout du bloc en clair au texte entier
         plain_text = plain_block + plain_text
-        print(plain_text)
 
     # Retour du texte en clair sans le padding
     return plain_text[:-plain_text[-1]].decode('utf-8')
@@ -124,11 +125,9 @@ def decrypt_via_padding_oracle(cipher: bytes, connection: socket) -> str:
 
 def main() -> None:
     encrypted = bytes.fromhex(open("./cbc_ciphertext", "r").read().strip())
-    connection = connect_to_oracle()
 
-    plain = decrypt_via_padding_oracle(encrypted, connection)
+    plain = decrypt_via_padding_oracle(encrypted)
 
-    connection.close()
     print(plain)
 
 
