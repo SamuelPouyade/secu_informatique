@@ -1,6 +1,8 @@
 import socket
 import sys
+import time
 
+from tqdm import trange
 from Crypto.Cipher import AES
 
 
@@ -66,9 +68,16 @@ def decrypt_block(current_block: bytes, previous_block: bytes, block_size: int, 
     plain_block = bytearray(block_size)
 
     # Attaque sur chaque octet du bloc
-    for block_cursor in range(block_size - 1, -1, -1):
+    for block_cursor in trange(
+            block_size - 1, -1, -1,
+            desc=f"Déchiffrement du bloc commençant par {current_block[:3]} ",
+            leave=False,
+            unit="octet"):
         # Test de chaque valeur possible
-        for byte_value in range(256):
+        for byte_value in trange(
+                256,
+                desc=f"Test sur l'octet en position {block_cursor + 1} ",
+                leave=False):
             buffer[block_cursor] = byte_value
             cipher_block_attack = buffer + current_block
 
@@ -108,7 +117,10 @@ def decrypt_via_padding_oracle(cipher: bytes, block_size=AES.block_size, connect
     plain_text = bytearray()
 
     # Déchiffrement par blocs
-    for i in range(nb_blocks):
+    for i in trange(
+            nb_blocks,
+            desc="Déchiffrement des blocs ",
+            unit="bloc"):
         # Récupération des blocs
         current_block = cipher_blocks[-(i + 1)]
         previous_block = cipher_blocks[-(i + 2)]
@@ -126,9 +138,12 @@ def decrypt_via_padding_oracle(cipher: bytes, block_size=AES.block_size, connect
 def main() -> None:
     encrypted = bytes.fromhex(open("./cbc_ciphertext", "r").read().strip())
 
+    begin = time.time()
     plain = decrypt_via_padding_oracle(encrypted)
+    end = time.time()
 
     print(plain)
+    print(f"Temps d'exécution : {end - begin:.2f}s")
 
 
 if __name__ == "__main__":
