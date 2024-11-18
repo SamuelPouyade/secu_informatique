@@ -1,6 +1,5 @@
 from PIL import Image
 import os
-import string
 from tqdm import tqdm
 
 from simple_term_menu import TerminalMenu
@@ -48,7 +47,7 @@ def decipher_simple_xor(input_file, output_file):
                 os.remove(output_file)
 
 
-def calculate_key_xor(input_file: string):
+def calculate_key_xor(input_file):
     """
     Fonction permettant de calculer la clé utilisée pour chiffrée l'image
     :param input_file:  l'image chiffrée

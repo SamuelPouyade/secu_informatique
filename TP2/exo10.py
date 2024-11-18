@@ -1,6 +1,5 @@
 import string
-import sys, socket, csv, time
-from functools import partial
+import sys, socket, time
 from tqdm import tqdm
 
 from simple_term_menu import TerminalMenu
@@ -126,7 +125,7 @@ def find_password(ma_socket: socket.socket, password_length: int) -> None:
 
 def restart_socket(ma_socket:socket.socket, server: str, port: int) -> socket.socket:
     """
-    Fonction permettant de renouveller la socket. Si nous voulons tester les deux méthodes sans quitter le programme il
+    Fonction permettant de renouveller la socket. Si nous voulons tester à nouveau le programme sans le quitter il
     faut nécessairement passer par cette méthode.
     :param ma_socket: Socket utilisateur permettant de se connecter au site internet
     :return: la socket renouvellée
