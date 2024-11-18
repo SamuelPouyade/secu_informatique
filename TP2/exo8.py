@@ -6,7 +6,7 @@ from tqdm import trange
 from Crypto.Cipher import AES
 
 
-def connect_to_oracle(server="51.195.253.124", port=11111) -> socket:
+def connect_to_oracle(server="51.195.253.124", port=11111) -> socket.socket:
     """
     Connexion à l'oracle
     :param server: Adresse IP du serveur
@@ -14,7 +14,7 @@ def connect_to_oracle(server="51.195.253.124", port=11111) -> socket:
     :param port: Port du serveur
     :type port: int
     :return: Socket de connexion
-    :rtype: socket
+    :rtype: socket.socket
     """
     soc_con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -27,11 +27,11 @@ def connect_to_oracle(server="51.195.253.124", port=11111) -> socket:
     return soc_con
 
 
-def is_valid_padding(soc: socket, cipher_block: str) -> bool:
+def is_valid_padding(soc: socket.socket, cipher_block: str) -> bool:
     """
     Vérifie si le padding est valide grâce à l'oracle (serveur distant)
     :param soc: Socket de connexion à l'oracle
-    :type soc: socket
+    :type soc: socket.socket
     :param cipher_block: Bloc chiffré à tester
     :type cipher_block: str
     :return: True si le padding est valide, False sinon
@@ -49,7 +49,7 @@ def is_valid_padding(soc: socket, cipher_block: str) -> bool:
     return False
 
 
-def decrypt_block(current_block: bytes, previous_block: bytes, block_size: int, connection: socket) -> bytearray:
+def decrypt_block(current_block: bytes, previous_block: bytes, block_size: int, connection: socket.socket) -> bytearray:
     """
     Décrypte un bloc chiffré en utilisant la méthode du padding oracle
     :param current_block: Bloc chiffré à déchiffrer
@@ -59,7 +59,7 @@ def decrypt_block(current_block: bytes, previous_block: bytes, block_size: int, 
     :param block_size: Taille des blocs
     :type block_size: int
     :param connection: Socket de connexion à l'oracle
-    :type connection: socket
+    :type connection: socket.socket
     :return: Bloc en clair
     :rtype: bytearray
     """
@@ -103,7 +103,7 @@ def decrypt_via_padding_oracle(cipher: bytes, block_size=AES.block_size, connect
     :param block_size: Taille des blocs (AES par défaut)
     :type block_size: int
     :param connection: Socket de connexion à l'oracle
-    :type connection: socket
+    :type connection: socket.socket
     :return: Donnée en clair
     :rtype: str
     """
