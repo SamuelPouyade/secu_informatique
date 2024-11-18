@@ -66,7 +66,6 @@ def calculate_key_xor(input_file: string):
     for byte_chiffre, expected_byte in zip(header_chiffre, header):
         cle_xor.append(calculate_xor(byte_chiffre, expected_byte))
 
-    print("Clé utilisée pour chiffrer l'en-tête: ", cle_xor)
     return cle_xor
 
 def find_repeated_sequences_max_half_length(numbers):

