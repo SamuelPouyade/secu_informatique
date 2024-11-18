@@ -120,30 +120,6 @@ def find_password(ma_socket: socket.socket, password_length: int) -> None:
         print(Style.RESET_ALL)
         find_password(ma_socket, password_length)
 
-
-
-
-def restart_socket(ma_socket:socket.socket, server: str, port: int) -> socket.socket:
-    """
-    Fonction permettant de renouveller la socket. Si nous voulons tester à nouveau le programme sans le quitter il
-    faut nécessairement passer par cette méthode.
-    :param ma_socket: Socket utilisateur permettant de se connecter au site internet
-    :return: la socket renouvellée
-    """
-    ma_socket.close()
-    ma_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    try:
-        ma_socket.connect((server, port))
-    except Exception as e:
-        print("Problème de connexion", e.args)
-        sys.exit(1)
-
-    ma_socket.recv(1024)
-
-    return ma_socket
-
-
 if __name__ == "__main__":
     main_title = "Authentification à un site\nAppuyez sur les flèches pour naviguer et sur Entrée pour sélectionner"
     main_options = ["Lancement de la recherche du mot de passe", None, "Quitter"]
