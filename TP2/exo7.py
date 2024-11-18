@@ -2,6 +2,7 @@ import socket
 import string
 import sys
 
+from tqdm import trange
 
 def connect_to_server(server="51.195.253.124", port=4321) -> socket:
     ma_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,7 +19,7 @@ def connect_to_server(server="51.195.253.124", port=4321) -> socket:
 def attack_server(iterations: int, connection_method) -> list[str]:
     data = []
 
-    for _ in range(iterations):
+    for _ in trange(iterations, desc="Récupération des données ", unit="requête"):
         soc = connection_method()
         data.append(soc.recv(1024).decode('utf_8').strip())
         soc.close()
@@ -47,7 +48,7 @@ def bad_vigenere_decrypting(iterations=1000, connection_method=connect_to_server
 
 
 def main() -> None:
-    print(bad_vigenere_decrypting())
+    print(bad_vigenere_decrypting(300))
 
 
 if __name__ == "__main__":
