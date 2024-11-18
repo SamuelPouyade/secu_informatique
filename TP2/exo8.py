@@ -5,6 +5,15 @@ from Crypto.Cipher import AES
 
 
 def connect_to_oracle(server="51.195.253.124", port=11111) -> socket:
+    """
+    Connexion à l'oracle
+    :param server: Adresse IP du serveur
+    :type server: str
+    :param port: Port du serveur
+    :type port: int
+    :return: Socket de connexion
+    :rtype: socket
+    """
     soc_con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
@@ -17,6 +26,15 @@ def connect_to_oracle(server="51.195.253.124", port=11111) -> socket:
 
 
 def is_valid_padding(soc: socket, cipher_block: str) -> bool:
+    """
+    Vérifie si le padding est valide grâce à l'oracle (serveur distant)
+    :param soc: Socket de connexion à l'oracle
+    :type soc: socket
+    :param cipher_block: Bloc chiffré à tester
+    :type cipher_block: str
+    :return: True si le padding est valide, False sinon
+    :rtype: bool
+    """
     # Envoi des donnees
     soc.sendall(cipher_block.encode("utf-8"))
 
@@ -29,7 +47,18 @@ def is_valid_padding(soc: socket, cipher_block: str) -> bool:
     return False
 
 
-def decrypt_block(connection: socket, current_block: bytes, previous_block: bytes) -> bytearray:
+def decrypt_block(current_block: bytes, previous_block: bytes, connection: socket) -> bytearray:
+    """
+    Décrypte un bloc chiffré en utilisant la méthode du padding oracle
+    :param connection: Socket de connexion à l'oracle
+    :type connection: socket
+    :param current_block: Bloc chiffré à déchiffrer
+    :type current_block: bytes
+    :param previous_block: Bloc précédent
+    :type previous_block: bytes
+    :return: Bloc en clair
+    :rtype: bytearray
+    """
     # Initialisation des variables
     buffer = bytearray(AES.block_size)
     plain_block = bytearray(AES.block_size)
@@ -57,6 +86,16 @@ def decrypt_block(connection: socket, current_block: bytes, previous_block: byte
 
 
 def decrypt_via_padding_oracle(cipher: bytes, connection: socket) -> str:
+    """
+    Décrypte une donnée chiffrée avec AES-CBC utilisant du padding par la méthode
+    du padding oracle
+    :param cipher: Donnée chiffrée
+    :type cipher: bytes
+    :param connection: Socket de connexion à l'oracle
+    :type connection: socket
+    :return: Donnée en clair
+    :rtype: str
+    """
     # Découpage du texte chiffré en blocs
     cipher_blocks = [cipher[i * AES.block_size:(i + 1) * AES.block_size] for i in range(len(cipher) // AES.block_size)]
 
@@ -84,14 +123,12 @@ def decrypt_via_padding_oracle(cipher: bytes, connection: socket) -> str:
 
 
 def main() -> None:
-    encrypted = open("./cbc_ciphertext", "r").read().strip()
-
+    encrypted = bytes.fromhex(open("./cbc_ciphertext", "r").read().strip())
     connection = connect_to_oracle()
 
-    plain = decrypt_via_padding_oracle(bytes.fromhex(encrypted), connection)
+    plain = decrypt_via_padding_oracle(encrypted, connection)
 
     connection.close()
-
     print(plain)
 
 
