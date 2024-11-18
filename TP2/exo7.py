@@ -27,7 +27,7 @@ def attack_server(iterations: int, connection_method) -> list[str]:
     return data
 
 
-def bad_vigenere_decrypting(iterations=1000, connection_method=connect_to_server) -> str:
+def bad_vernam_decrypting(iterations=1000, connection_method=connect_to_server) -> str:
     cypher_collection = attack_server(iterations, connection_method)
 
     plain_text = []
@@ -48,7 +48,7 @@ def bad_vigenere_decrypting(iterations=1000, connection_method=connect_to_server
 
 
 def main() -> None:
-    print(bad_vigenere_decrypting(300))
+    print(bad_vernam_decrypting(300))
 
 
 if __name__ == "__main__":
