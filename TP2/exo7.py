@@ -1,8 +1,8 @@
 import socket
 import string
-import sys
 
 from tqdm import trange
+
 
 def connect_to_server(server="51.195.253.124", port=4321) -> socket.socket:
     """
