@@ -1,6 +1,8 @@
 import socket
+import string
 import sys
 
+from tqdm import trange
 
 def connect_to_server(server="51.195.253.124", port=4321) -> socket:
     ma_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -13,34 +15,27 @@ def connect_to_server(server="51.195.253.124", port=4321) -> socket:
 
     return ma_socket
 
-def spam_queries(spam_rate=1000) -> list[str]:
+
+def attack_server(iterations: int, connection_method) -> list[str]:
     data = []
 
-    for _ in range(spam_rate):
-        soc = connect_to_server()
+    for _ in trange(iterations, desc="Récupération des données ", unit="requête"):
+        soc = connection_method()
         data.append(soc.recv(1024).decode('utf_8').strip())
         soc.close()
 
     return data
 
 
-def get_alphabet() -> list[chr]:
-    """
-    Fonction pour récupérer les lettres de l'alphabet latin en majuscule
-    :return: la liste des lettres majuscules
-    """
-    return [chr(ord('A') + i) for i in range(26)]
-
-
-if __name__ == "__main__":
-    cypher_collection = spam_queries(300)
+def bad_vernam_decrypting(iterations=1000, connection_method=connect_to_server) -> str:
+    cypher_collection = attack_server(iterations, connection_method)
 
     plain_text = []
     for i in range(len(cypher_collection[0])):
-        # On ne recupere qu'une seule lettre sur celles presentes
+        # On ne récupère qu'une seule lettre sur celles présentes
         letter_list = list(dict.fromkeys([cypher[i] for cypher in cypher_collection]))
 
-        missing_letter = set(letter_list) ^ set(get_alphabet())
+        missing_letter = set(letter_list) ^ set(string.ascii_uppercase)
 
         if len(missing_letter) > 1:
             print(f"L'emplacement {i + 1} du message a plusieurs occurrences possibles : {missing_letter}")
@@ -49,9 +44,12 @@ if __name__ == "__main__":
 
         plain_text.append(missing_letter)
 
-    plain_text = [''.join(sorted(list(s))) for s in plain_text]
-
-    print(''.join(plain_text))
+    return ''.join([''.join(sorted(list(s))) for s in plain_text])
 
 
+def main() -> None:
+    print(bad_vernam_decrypting(300))
 
+
+if __name__ == "__main__":
+    main()
